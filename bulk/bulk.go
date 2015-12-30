@@ -12,12 +12,11 @@ import (
 )
 
 type Image struct {
-	Path      string
-	Directory string
-	Name      string
-	Tags      []string
-	Source    string
-	Rating    string
+	ID     int
+	Name   string
+	Tags   []string
+	Source string
+	Rating string
 }
 
 var supportedExt = []string{"gif", "jpeg", "jpg", "png", "swf"}
@@ -43,10 +42,10 @@ func loadImages(dir string) ([]Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, f := range files {
+	for id, f := range files {
 		if !f.IsDir() {
 			if isSupportedType(f.Name()) {
-				img := Image{Name: f.Name()}
+				img := Image{ID: id, Name: f.Name()}
 				images = append(images, img)
 			}
 		}
@@ -62,6 +61,7 @@ func loadCSV(path string) ([]Image, error) {
 		return nil, err
 	}
 	r := csv.NewReader(f)
+	id := 0
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -72,12 +72,14 @@ func loadCSV(path string) ([]Image, error) {
 		}
 
 		img := Image{
+			ID:     id,
 			Name:   filepath.Base(record[0]),
 			Tags:   strings.Split(record[1], " "),
 			Source: record[2],
 			Rating: record[3],
 		}
 		images = append(images, img)
+		id++
 	}
 	return images, nil
 }
@@ -130,6 +132,20 @@ type byName []Image
 func (img byName) Len() int           { return len(img) }
 func (img byName) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
 func (img byName) Less(i, j int) bool { return img[i].Name < img[j].Name }
+
+func FindByID(image []Image, id string) *Image {
+	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= id })
+	if i < len(image) && image[i].Name == id {
+		return &image[i]
+	}
+	return nil
+}
+
+type ByID []Image
+
+func (img ByID) Len() int           { return len(img) }
+func (img ByID) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
+func (img ByID) Less(i, j int) bool { return img[i].ID < img[j].ID }
 
 func CurrentPrefix(dir, csvFilename string) (string, error) {
 	csvFile := filepath.Join(dir, csvFilename)
