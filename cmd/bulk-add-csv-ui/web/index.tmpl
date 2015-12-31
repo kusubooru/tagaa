@@ -29,17 +29,27 @@
 		<article>
 			<h3>{{ .Name }}</h3>
 			<img src="/img/{{ .Name }}" alt="{{ .Name }}">
-			<label for="tagsTextArea{{ .ID }}"></label>
-			<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="50" rows="5">{{ range $i, $tag := .Tags }}{{ $tag }}{{ printf " " }}{{ end }}{{ last .Tags }}</textarea>
-			<label for="sourceInput{{ .ID }}">Source</label>
-			<input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}">
 
-			<input id="sRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="s" {{ if eq .Rating "s" }}checked{{ end }}>
-			<label for="sRadio{{ .ID }}">Safe</label>
-			<input id="qRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="q" {{ if eq .Rating "q" }}checked{{ end }}>
-			<label for="qRadio{{ .ID }}">Questionable</label>
-			<input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
-			<label for="eRadio{{ .ID }}">Explicit</label>
+
+			<fieldset>
+				<legend>{{ .Name }}</legend>
+				<label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
+				<br>
+				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="60" rows="6">{{ range $i, $tag := .Tags }}{{ $tag }}{{ printf " " }}{{ end }}{{ last .Tags }}</textarea>
+				<br>
+				<label for="sourceInput{{ .ID }}"><b>Source</b></label>
+				<br>
+				<input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="60">
+				<br>
+				<label><b>Rating</b></label>
+				<br>
+				<input id="sRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="s" {{ if eq .Rating "s" }}checked{{ end }}>
+				<label for="sRadio{{ .ID }}">Safe</label>
+				<input id="qRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="q" {{ if eq .Rating "q" }}checked{{ end }}>
+				<label for="qRadio{{ .ID }}">Questionable</label>
+				<input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
+				<label for="eRadio{{ .ID }}">Explicit</label>
+			</fieldset>
 		</article>
 
 		{{ end }}
