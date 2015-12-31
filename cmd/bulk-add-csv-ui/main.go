@@ -40,9 +40,10 @@ func usage() {
 }
 
 type Model struct {
-	Prefix string
-	Dir    string
-	Images []bulk.Image
+	Prefix      string
+	Dir         string
+	CSVFilename string
+	Images      []bulk.Image
 }
 
 var model = Model{}
@@ -63,6 +64,7 @@ func run() error {
 		return fmt.Errorf("argument -d is required")
 	}
 	model.Dir = *directory
+	model.CSVFilename = *csvFilename
 
 	images, err := bulk.Load(*directory, *csvFilename)
 	if err != nil {
@@ -112,6 +114,8 @@ func update(w http.ResponseWriter, r *http.Request) {
 
 	// prefix
 	model.Prefix = r.PostForm["prefix"][0]
+	// csvFilename
+	model.CSVFilename = r.PostForm["csvFilename"][0]
 	for _, img := range model.Images {
 		// tags
 		areaTags := r.PostForm[fmt.Sprintf("image[%d].tags", img.ID)]

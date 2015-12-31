@@ -18,9 +18,20 @@
 
 <body>
 <form action="/update" method="POST">
+	{{ $inputSize := 60 }}
+	{{ $taRows := 6 }}
 	<input id="saveCSVSubmit" type="submit" value="Save to CSV">
-	<label for="prefixInput">Path Prefix</label>
-	<input id="prefixInput" type="text" name="prefix" value="{{.Prefix}}">
+	<label for="csvFilenameInput"><b>CSV Filename</b></label>
+	<br>
+	<input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
+	<br>
+	<label for="directory"><b>Local Directory</b></label>
+	<br>
+	<input id="directory" type="text" name="prefix" value="{{ .Dir }}" disabled size="{{ $inputSize }}">
+	<br>
+	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace local directory prefix)</label>
+	<br>
+	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
 
 	<section>
 		<h2>Images</h2>
@@ -35,11 +46,11 @@
 				<legend>{{ .Name }}</legend>
 				<label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
 				<br>
-				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="60" rows="6">{{ range $i, $tag := .Tags }}{{ $tag }}{{ printf " " }}{{ end }}{{ last .Tags }}</textarea>
+				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ range $i, $tag := .Tags }}{{ $tag }}{{ printf " " }}{{ end }}{{ last .Tags }}</textarea>
 				<br>
 				<label for="sourceInput{{ .ID }}"><b>Source</b></label>
 				<br>
-				<input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="60">
+				<input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="{{ $inputSize }}">
 				<br>
 				<label><b>Rating</b></label>
 				<br>
