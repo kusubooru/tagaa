@@ -86,10 +86,12 @@ func run() error {
 	http.Handle("/img/", http.HandlerFunc(serveImage))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
-	localURL := fmt.Sprintf("http://localhost:%v", *port)
-	if err := browserOpen(localURL); err != nil {
-		fmt.Sprintln(os.Stderr, "could not open browser, please visit %v manually", localURL)
-	}
+	go func() {
+		localURL := fmt.Sprintf("http://localhost:%v", *port)
+		if err := browserOpen(localURL); err != nil {
+			fmt.Sprintln(os.Stderr, "Error: could not open browser, please visit %v manually.", localURL)
+		}
+	}()
 
 	fmt.Println("Starting server at :" + *port)
 	if err := http.ListenAndServe(":"+*port, nil); err != nil {
