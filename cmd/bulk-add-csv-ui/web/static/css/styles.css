@@ -1,10 +1,8 @@
 html {
     font-family: sans-serif;
 }
-#saveCSVSubmit {
-    width: 100%;
-    display: block;
-    margin-bottom: 10px;
+input {
+    margin-bottom: 0.6em;
 }
 #err {
     background: #f2dede;
