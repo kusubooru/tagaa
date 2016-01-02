@@ -20,6 +20,11 @@
 <form action="/update" method="POST">
 	{{ $inputSize := 60 }}
 	{{ $taRows := 6 }}
+	{{ if .Err }}
+	<div id="err">
+		{{ .Err }}
+	</div>
+	{{ end }}
 	<input id="saveCSVSubmit" type="submit" value="Save to CSV">
 	<label for="csvFilenameInput"><b>CSV Filename</b></label>
 	<br>
