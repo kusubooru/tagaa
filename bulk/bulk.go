@@ -41,7 +41,7 @@ func isSupportedType(name string) bool {
 	return false
 }
 
-func loadImages(dir string) ([]Image, error) {
+func LoadImages(dir string) ([]Image, error) {
 	var images []Image
 
 	files, err := ioutil.ReadDir(dir)
@@ -61,14 +61,10 @@ func loadImages(dir string) ([]Image, error) {
 	return images, nil
 }
 
-func loadCSV(path string) ([]Image, error) {
+func LoadCSV(file io.Reader) ([]Image, error) {
 	var images []Image
 
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	r := csv.NewReader(f)
+	r := csv.NewReader(file)
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -89,28 +85,7 @@ func loadCSV(path string) ([]Image, error) {
 	return images, nil
 }
 
-func Load(dir, csvFilename string) ([]Image, error) {
-	images, err := loadImages(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	csvFile := filepath.Join(dir, csvFilename)
-	// if csv file doesn't exist
-	if _, err := os.Stat(csvFile); os.IsNotExist(err) {
-		return images, nil
-	}
-
-	info, err := loadCSV(csvFile)
-	if err != nil {
-		return nil, err
-	}
-	imagesWithInfo := combine(images, info)
-
-	return imagesWithInfo, nil
-}
-
-func combine(images, imagesWithInfo []Image) []Image {
+func Combine(images, imagesWithInfo []Image) []Image {
 	for _, info := range imagesWithInfo {
 		img := findByName(images, info.Name)
 		if img != nil {
@@ -124,23 +99,16 @@ func combine(images, imagesWithInfo []Image) []Image {
 	return images
 }
 
-func findByName(image []Image, name string) *Image {
-	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= name })
-	if i < len(image) && image[i].Name == name {
-		return &image[i]
-	}
-	return nil
-}
-
 type byName []Image
 
 func (img byName) Len() int           { return len(img) }
 func (img byName) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
 func (img byName) Less(i, j int) bool { return img[i].Name < img[j].Name }
 
-func FindByID(image []Image, id string) *Image {
-	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= id })
-	if i < len(image) && image[i].Name == id {
+func findByName(image []Image, name string) *Image {
+	sort.Sort(byName(image))
+	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= name })
+	if i < len(image) && image[i].Name == name {
 		return &image[i]
 	}
 	return nil
@@ -152,22 +120,23 @@ func (img ByID) Len() int           { return len(img) }
 func (img ByID) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
 func (img ByID) Less(i, j int) bool { return img[i].ID < img[j].ID }
 
-func CurrentPrefix(dir, csvFilename string) (string, error) {
-	csvFile := filepath.Join(dir, csvFilename)
-	// if csv file doesn't exist
-	if _, err := os.Stat(csvFile); os.IsNotExist(err) {
-		return "", fmt.Errorf("%v does not exist", csvFile)
+func FindByID(image []Image, id string) *Image {
+	sort.Sort(ByID(image))
+	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= id })
+	if i < len(image) && image[i].Name == id {
+		return &image[i]
 	}
+	return nil
+}
 
-	f, err := os.Open(csvFile)
-	if err != nil {
-		return "", err
-	}
-
-	r := csv.NewReader(f)
+func CurrentPrefix(dir string, file io.Reader) (string, error) {
+	r := csv.NewReader(file)
 	record, err := r.Read()
 	if err == io.EOF {
-		return "", fmt.Errorf("%v appears to be empty", csvFile)
+		return "", fmt.Errorf("empty CSV file")
+	}
+	if err != nil {
+		return "", err
 	}
 
 	folder := filepath.Base(dir)

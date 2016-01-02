@@ -76,6 +76,7 @@ func run() error {
 	}
 
 	http.Handle("/", http.HandlerFunc(index))
+	http.Handle("/load", http.HandlerFunc(load))
 	http.Handle("/update", http.HandlerFunc(update))
 	http.Handle("/img/", http.HandlerFunc(serveImage))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
@@ -95,16 +96,36 @@ func run() error {
 	return nil
 }
 
-func loadFromCSVFile(dir, csvf string) (*Model, error) {
-	m := &Model{Dir: dir, CSVFilename: csvf}
+func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
+	m := &Model{Dir: dir, CSVFilename: csvFilename}
 
-	imgs, err := bulk.Load(dir, csvf)
+	// Loading images from folder
+	images, err := bulk.LoadImages(dir)
 	if err != nil {
 		return nil, err
 	}
-	m.Images = imgs
 
-	cp, err := bulk.CurrentPrefix(dir, csvf)
+	csvFilepath := filepath.Join(dir, csvFilename)
+	// if csv file doesn't exist
+	if _, err := os.Stat(csvFilepath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("%v does not exist", csvFilepath)
+	}
+	f, err := os.Open(csvFilepath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	// Loading CSV image data
+	imagesWithInfo, err := bulk.LoadCSV(f)
+	if err != nil {
+		return nil, err
+	}
+	m.Images = bulk.Combine(images, imagesWithInfo)
+
+	// Getting current prefix
+	f.Seek(0, 0)
+	cp, err := bulk.CurrentPrefix(f, dir)
 	if err != nil {
 		return nil, err
 	}
@@ -113,10 +134,30 @@ func loadFromCSVFile(dir, csvf string) (*Model, error) {
 	return m, nil
 }
 
+func load(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 << 20)
+	f, h, err := r.FormFile("csvFilename")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	img, err := bulk.LoadCSV(f)
+	if err != nil {
+		model.Err = fmt.Errorf("Error: could not load image info from CSV File: %v", err)
+		render(w, "index", model)
+	} else {
+		model.CSVFilename = h.Filename
+		model.Images = bulk.Combine(model.Images, img)
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
 	m, err := loadFromCSVFile(model.Dir, model.CSVFilename)
 	if err != nil {
-		model.Err = fmt.Errorf("could not load from CSV File: %v", err)
+		model.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)
 	} else {
 		model = m
 	}
@@ -154,7 +195,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := saveToCSVFile(model); err != nil {
-		model.Err = fmt.Errorf("Could not save to CSV file: %v", err)
+		model.Err = fmt.Errorf("Error: could not save to CSV file: %v", err)
 		render(w, "index", model)
 	} else {
 		model.Err = nil
@@ -175,6 +216,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not open image %v", p), http.StatusInternalServerError)
 	}
+	defer f.Close()
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not read image %v", p), http.StatusInternalServerError)
