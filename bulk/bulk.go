@@ -14,9 +14,15 @@ import (
 type Image struct {
 	ID     int
 	Name   string
-	Tags   []string
+	Tags   Tags
 	Source string
 	Rating string
+}
+
+type Tags []string
+
+func (t Tags) String() string {
+	return strings.Join(t, " ")
 }
 
 var supportedExt = []string{"gif", "jpeg", "jpg", "png", "swf"}
