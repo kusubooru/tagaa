@@ -27,14 +27,14 @@ var fns = template.FuncMap{
 var templates = template.Must(template.New("").Funcs(fns).ParseGlob("web/*.tmpl"))
 
 var (
-	directory   = flag.String("d", "", "the directory that contains the images")
+	directory   = flag.String("dir", ".", "the directory that contains the images")
 	csvFilename = flag.String("csv", "bulk.csv", "the name of the CSV file")
 	pathPrefix  = flag.String("prefix", "", "the path that should be prefixed before the directory and the image name on the CSV file")
 	port        = flag.String("port", "8080", "server port")
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: bulk-add-csv-ui -d <directory with images> [Options...]\n")
+	fmt.Fprintf(os.Stderr, "Usage: bulk-add-csv-ui [Options...]\n")
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	flag.PrintDefaults()
 }
@@ -60,16 +60,17 @@ func run() error {
 	flag.Usage = usage
 	flag.Parse()
 
-	if *directory == "" {
-		usage()
-		return fmt.Errorf("argument -d is required")
-	}
-
-	var err error
-	model, err = loadFromCSVFile(*directory, *csvFilename)
+	d, err := filepath.Abs(*directory)
 	if err != nil {
 		return err
 	}
+	*directory = d
+
+	m, err := loadFromCSVFile(*directory, *csvFilename)
+	if err != nil {
+		return err
+	}
+	model = m
 
 	if *pathPrefix != "" {
 		model.Prefix = *pathPrefix
@@ -84,7 +85,7 @@ func run() error {
 	go func() {
 		localURL := fmt.Sprintf("http://localhost:%v", *port)
 		if err := browserOpen(localURL); err != nil {
-			fmt.Sprintln(os.Stderr, "Error: could not open browser, please visit %v manually.", localURL)
+			fmt.Fprintf(os.Stderr, "Error: could not open browser, please visit %v manually.\n", localURL)
 		}
 	}()
 
@@ -105,12 +106,7 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 		return nil, err
 	}
 
-	csvFilepath := filepath.Join(dir, csvFilename)
-	// if csv file doesn't exist
-	if _, err := os.Stat(csvFilepath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("%v does not exist", csvFilepath)
-	}
-	f, err := os.Open(csvFilepath)
+	f, err := os.OpenFile(filepath.Join(dir, csvFilename), os.O_RDONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return nil, err
 	}

@@ -133,7 +133,7 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 	r := csv.NewReader(file)
 	record, err := r.Read()
 	if err == io.EOF {
-		return "", fmt.Errorf("empty CSV file")
+		return "", nil
 	}
 	if err != nil {
 		return "", err
