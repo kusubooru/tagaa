@@ -47,7 +47,7 @@ type Model struct {
 	Images      []bulk.Image
 }
 
-var model = Model{}
+var model *Model
 
 func main() {
 	if err := run(); err != nil {
@@ -64,23 +64,16 @@ func run() error {
 		usage()
 		return fmt.Errorf("argument -d is required")
 	}
-	model.Dir = *directory
-	model.CSVFilename = *csvFilename
 
-	images, err := bulk.Load(*directory, *csvFilename)
+	var err error
+	model, err = loadFromCSVFile(*directory, *csvFilename)
 	if err != nil {
 		return err
 	}
-	model.Images = images
 
-	currentPrefix, err := bulk.CurrentPrefix(*directory, *csvFilename)
-	if err != nil {
-		return err
+	if *pathPrefix != "" {
+		model.Prefix = *pathPrefix
 	}
-	if *pathPrefix != "" && *pathPrefix != currentPrefix {
-		return fmt.Errorf("path prefix conflict: -prefix is %v, while csv file is %v", *pathPrefix, currentPrefix)
-	}
-	model.Prefix = currentPrefix
 
 	http.Handle("/", http.HandlerFunc(index))
 	http.Handle("/update", http.HandlerFunc(update))
@@ -102,7 +95,32 @@ func run() error {
 	return nil
 }
 
+func loadFromCSVFile(dir, csvf string) (*Model, error) {
+	m := &Model{Dir: dir, CSVFilename: csvf}
+
+	imgs, err := bulk.Load(dir, csvf)
+	if err != nil {
+		return nil, err
+	}
+	m.Images = imgs
+
+	cp, err := bulk.CurrentPrefix(dir, csvf)
+	if err != nil {
+		return nil, err
+	}
+	m.Prefix = cp
+
+	return m, nil
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
+	m, err := loadFromCSVFile(model.Dir, model.CSVFilename)
+	if err != nil {
+		model.Err = fmt.Errorf("could not load from CSV File: %v", err)
+	} else {
+		model = m
+	}
+
 	render(w, "index", model)
 }
 
@@ -144,8 +162,8 @@ func update(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func saveToCSVFile(model Model) error {
-	return bulk.Save(model.Images, model.Dir, model.CSVFilename, model.Prefix)
+func saveToCSVFile(m *Model) error {
+	return bulk.Save(m.Images, m.Dir, m.CSVFilename, m.Prefix)
 }
 
 func serveImage(w http.ResponseWriter, r *http.Request) {
