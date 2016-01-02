@@ -178,7 +178,7 @@ func CurrentPrefix(dir, csvFilename string) (string, error) {
 }
 
 func Save(images []Image, dir, csvFilename, prefix string) error {
-	csvFile := filepath.Join(dir, "new-"+csvFilename)
+	csvFile := filepath.Join(dir, csvFilename)
 	f, err := os.Create(csvFile)
 	if err != nil {
 		return err

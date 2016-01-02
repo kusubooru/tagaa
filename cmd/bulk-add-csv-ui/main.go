@@ -98,9 +98,7 @@ func run() error {
 	if err := http.ListenAndServe(":"+*port, nil); err != nil {
 		return err
 	}
-	//if err := bulk.Save(images, *directory, *csvFilename, prefix); err != nil {
-	//	return err
-	//}
+
 	return nil
 }
 
