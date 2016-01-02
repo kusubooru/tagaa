@@ -42,11 +42,13 @@ func loadImages(dir string) ([]Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	for id, f := range files {
+	id := 0
+	for _, f := range files {
 		if !f.IsDir() {
 			if isSupportedType(f.Name()) {
 				img := Image{ID: id, Name: f.Name()}
 				images = append(images, img)
+				id++
 			}
 		}
 	}
@@ -61,7 +63,6 @@ func loadCSV(path string) ([]Image, error) {
 		return nil, err
 	}
 	r := csv.NewReader(f)
-	id := 0
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -72,14 +73,12 @@ func loadCSV(path string) ([]Image, error) {
 		}
 
 		img := Image{
-			ID:     id,
 			Name:   filepath.Base(record[0]),
 			Tags:   strings.Split(record[1], " "),
 			Source: record[2],
 			Rating: record[3],
 		}
 		images = append(images, img)
-		id++
 	}
 	return images, nil
 }
