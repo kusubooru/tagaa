@@ -40,6 +40,7 @@ func usage() {
 }
 
 type Model struct {
+	Err         error
 	Prefix      string
 	Dir         string
 	CSVFilename string
@@ -136,7 +137,17 @@ func update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	if err := saveToCSVFile(model); err != nil {
+		model.Err = fmt.Errorf("Could not save to CSV file: %v", err)
+		render(w, "index", model)
+	} else {
+		model.Err = nil
+		http.Redirect(w, r, "/", http.StatusFound)
+	}
+}
+
+func saveToCSVFile(model Model) error {
+	return bulk.Save(model.Images, model.Dir, model.CSVFilename, model.Prefix)
 }
 
 func serveImage(w http.ResponseWriter, r *http.Request) {
