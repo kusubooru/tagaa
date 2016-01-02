@@ -75,9 +75,9 @@ func run() error {
 		model.Prefix = *pathPrefix
 	}
 
-	http.Handle("/", http.HandlerFunc(index))
-	http.Handle("/load", http.HandlerFunc(load))
-	http.Handle("/update", http.HandlerFunc(update))
+	http.Handle("/", http.HandlerFunc(indexHandler))
+	http.Handle("/load", http.HandlerFunc(loadHandler))
+	http.Handle("/update", http.HandlerFunc(updateHandler))
 	http.Handle("/img/", http.HandlerFunc(serveImage))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
@@ -125,7 +125,7 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 
 	// Getting current prefix
 	f.Seek(0, 0)
-	cp, err := bulk.CurrentPrefix(f, dir)
+	cp, err := bulk.CurrentPrefix(dir, f)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 	return m, nil
 }
 
-func load(w http.ResponseWriter, r *http.Request) {
+func loadHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20)
 	f, h, err := r.FormFile("csvFilename")
 	if err != nil {
@@ -154,7 +154,7 @@ func load(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	m, err := loadFromCSVFile(model.Dir, model.CSVFilename)
 	if err != nil {
 		model.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)
@@ -171,7 +171,7 @@ func render(w http.ResponseWriter, tmpl string, model interface{}) {
 	}
 }
 
-func update(w http.ResponseWriter, r *http.Request) {
+func updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "could not parse form", http.StatusInternalServerError)
