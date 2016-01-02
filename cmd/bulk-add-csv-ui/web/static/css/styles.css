@@ -1,3 +1,6 @@
+html {
+    font-family: sans-serif;
+}
 #saveCSVSubmit {
     width: 100%;
     display: block;
