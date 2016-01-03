@@ -159,7 +159,13 @@ func FindByID(image []Image, id int) *Image {
 	return nil
 }
 
-// CurrentPrefix reads from an open CSV file
+// CurrentPrefix reads from an open CSV file, reads the first line and uses the
+// base directory of the provided dir path to find the path prefix used in the
+// CSV file.
+//
+// As an example if the provided dir path is '/localpath/pics' and the first line
+// has '/serverpath/pics/pic1' then the returned current prefix will be
+// '/serverpath'.
 func CurrentPrefix(dir string, file io.Reader) (string, error) {
 	r := csv.NewReader(file)
 	record, err := r.Read()
