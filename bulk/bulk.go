@@ -142,16 +142,18 @@ func findByName(image []Image, name string) *Image {
 	return nil
 }
 
-type ByID []Image
+type byID []Image
 
-func (img ByID) Len() int           { return len(img) }
-func (img ByID) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
-func (img ByID) Less(i, j int) bool { return img[i].ID < img[j].ID }
+func (img byID) Len() int           { return len(img) }
+func (img byID) Swap(i, j int)      { img[i], img[j] = img[j], img[i] }
+func (img byID) Less(i, j int) bool { return img[i].ID < img[j].ID }
 
-func FindByID(image []Image, id string) *Image {
-	sort.Sort(ByID(image))
-	i := sort.Search(len(image), func(i int) bool { return image[i].Name >= id })
-	if i < len(image) && image[i].Name == id {
+// FindByID takes a slice of images, sorts them by ID and then finds then one
+// with ID id.
+func FindByID(image []Image, id int) *Image {
+	sort.Sort(byID(image))
+	i := sort.Search(len(image), func(i int) bool { return image[i].ID >= id })
+	if i < len(image) && image[i].ID == id {
 		return &image[i]
 	}
 	return nil

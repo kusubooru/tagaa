@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/kusubooru/shimmie2-tools/bulk"
@@ -204,7 +205,11 @@ func saveToCSVFile(m *Model) error {
 }
 
 func serveImage(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
+	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("%v is not a valid image ID"), http.StatusBadRequest)
+	}
 	img := bulk.FindByID(model.Images, id)
 	p := filepath.Join(*directory, img.Name)
 
