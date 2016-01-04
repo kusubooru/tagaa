@@ -260,7 +260,11 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("could not read image %v", p), http.StatusInternalServerError)
 		return
 	}
-	w.Write(data)
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
 
 func browserOpen(input string) error {
