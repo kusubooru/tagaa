@@ -40,7 +40,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-type Model struct {
+type model struct {
 	Err         error
 	Prefix      string
 	Dir         string
@@ -48,7 +48,7 @@ type Model struct {
 	Images      []bulk.Image
 }
 
-var model *Model
+var globalModel *model
 
 func main() {
 	if err := run(); err != nil {
@@ -71,10 +71,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	model = m
+	globalModel = m
 
 	if *pathPrefix != "" {
-		model.Prefix = *pathPrefix
+		globalModel.Prefix = *pathPrefix
 	}
 
 	http.Handle("/", http.HandlerFunc(indexHandler))
@@ -98,8 +98,8 @@ func run() error {
 	return nil
 }
 
-func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
-	m := &Model{Dir: dir, CSVFilename: csvFilename}
+func loadFromCSVFile(dir, csvFilename string) (*model, error) {
+	m := &model{Dir: dir, CSVFilename: csvFilename}
 
 	// Loading images from folder
 	images, err := bulk.LoadImages(dir)
@@ -145,26 +145,41 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 
+	// TODO: Extract load logic to function.
 	img, err := bulk.LoadCSV(f)
 	if err != nil {
-		model.Err = fmt.Errorf("Error: could not load image info from CSV File: %v", err)
-		render(w, "index", model)
-	} else {
-		model.CSVFilename = h.Filename
-		model.Images = bulk.Combine(model.Images, img)
-		http.Redirect(w, r, "/", http.StatusFound)
+		globalModel.Err = fmt.Errorf("Error: could not load image info from CSV File: %v", err)
+		render(w, "index", globalModel)
+		return
 	}
+	globalModel.CSVFilename = h.Filename
+	globalModel.Images = bulk.Combine(globalModel.Images, img)
+	if _, err = f.Seek(0, 0); err != nil {
+		http.Error(w, fmt.Sprintf("could not seek multipart file: %v", err), http.StatusInternalServerError)
+		return
+	}
+	prefix, err := bulk.CurrentPrefix(globalModel.Dir, f)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not read current prefix from multipart file: %v", err), http.StatusInternalServerError)
+		return
+	}
+	err = bulk.Save(globalModel.Images, globalModel.Dir, globalModel.CSVFilename, prefix)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not save file: %v", err), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	m, err := loadFromCSVFile(model.Dir, model.CSVFilename)
+	m, err := loadFromCSVFile(globalModel.Dir, globalModel.CSVFilename)
 	if err != nil {
-		model.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)
+		globalModel.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)
 	} else {
-		model = m
+		globalModel = m
 	}
 
-	render(w, "index", model)
+	render(w, "index", globalModel)
 }
 
 func render(w http.ResponseWriter, tmpl string, model interface{}) {
@@ -182,32 +197,32 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prefix
-	model.Prefix = r.PostForm["prefix"][0]
+	globalModel.Prefix = r.PostForm["prefix"][0]
 	// csvFilename
-	model.CSVFilename = r.PostForm["csvFilename"][0]
-	for _, img := range model.Images {
+	globalModel.CSVFilename = r.PostForm["csvFilename"][0]
+	for _, img := range globalModel.Images {
 		// tags
 		areaTags := r.PostForm[fmt.Sprintf("image[%d].tags", img.ID)]
-		model.Images[img.ID].Tags = strings.Fields(areaTags[0])
+		globalModel.Images[img.ID].Tags = strings.Fields(areaTags[0])
 		// source
-		model.Images[img.ID].Source = r.PostForm[fmt.Sprintf("image[%d].source", img.ID)][0]
+		globalModel.Images[img.ID].Source = r.PostForm[fmt.Sprintf("image[%d].source", img.ID)][0]
 		// rating
 		rating := r.PostForm[fmt.Sprintf("image[%d].rating", img.ID)]
 		if len(rating) != 0 {
-			model.Images[img.ID].Rating = rating[0]
+			globalModel.Images[img.ID].Rating = rating[0]
 		}
 	}
 
-	if err := saveToCSVFile(model); err != nil {
-		model.Err = fmt.Errorf("Error: could not save to CSV file: %v", err)
-		render(w, "index", model)
+	if err := saveToCSVFile(globalModel); err != nil {
+		globalModel.Err = fmt.Errorf("Error: could not save to CSV file: %v", err)
+		render(w, "index", globalModel)
 	} else {
-		model.Err = nil
+		globalModel.Err = nil
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
-func saveToCSVFile(m *Model) error {
+func saveToCSVFile(m *model) error {
 	return bulk.Save(m.Images, m.Dir, m.CSVFilename, m.Prefix)
 }
 
@@ -218,7 +233,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("%v is not a valid image ID", idStr), http.StatusBadRequest)
 		return
 	}
-	img := bulk.FindByID(model.Images, id)
+	img := bulk.FindByID(globalModel.Images, id)
 	if img == nil {
 		http.Error(w, fmt.Sprintf("no image found with ID: %v", id), http.StatusNotFound)
 		return
