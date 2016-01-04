@@ -247,7 +247,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 
 	f, err := os.Open(p)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not open image %v", p), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("could not open image: %v", err), http.StatusInternalServerError)
 		return
 	}
 	defer func() {
@@ -257,7 +257,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	}()
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not read image %v", p), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("could not read image: %v", err), http.StatusInternalServerError)
 		return
 	}
 	_, err = w.Write(data)
