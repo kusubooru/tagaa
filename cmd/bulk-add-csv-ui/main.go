@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -143,7 +144,11 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("could not parse multipart file: %v", err), http.StatusInternalServerError)
 		return
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Printf("Error: could not close multipart file: %v\n", cerr)
+		}
+	}()
 
 	// TODO: Extract load logic to function.
 	img, err := bulk.LoadCSV(f)
