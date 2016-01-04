@@ -111,7 +111,11 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	// Loading CSV image data
 	imagesWithInfo, err := bulk.LoadCSV(f)
