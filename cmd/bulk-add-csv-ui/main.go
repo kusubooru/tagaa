@@ -250,7 +250,11 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("could not open image %v", p), http.StatusInternalServerError)
 		return
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Printf("Error: could not close image file: %v\n", cerr)
+		}
+	}()
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not read image %v", p), http.StatusInternalServerError)
