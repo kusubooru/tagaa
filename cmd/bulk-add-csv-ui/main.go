@@ -125,7 +125,9 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 	m.Images = bulk.Combine(images, imagesWithInfo)
 
 	// Getting current prefix
-	f.Seek(0, 0)
+	if _, err = f.Seek(0, 0); err != nil {
+		return nil, err
+	}
 	cp, err := bulk.CurrentPrefix(dir, f)
 	if err != nil {
 		return nil, err
