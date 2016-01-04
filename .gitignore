@@ -1,1 +1,3 @@
-bulk-add-csv-ui
+local-tagger
+!local-tagger/
+bulk*.csv

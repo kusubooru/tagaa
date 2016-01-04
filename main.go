@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kusubooru/shimmie2-tools/bulk"
+	"github.com/kusubooru/local-tagger/bulk"
 )
 
 var fns = template.FuncMap{
