@@ -119,9 +119,7 @@ func Combine(images, imagesWithInfo []Image) []Image {
 		if img != nil {
 			img.Source = info.Source
 			img.Rating = info.Rating
-			for _, t := range info.Tags {
-				img.Tags = append(img.Tags, t)
-			}
+			img.Tags = info.Tags
 		}
 	}
 	return images
