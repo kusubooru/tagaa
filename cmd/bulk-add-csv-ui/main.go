@@ -165,6 +165,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func render(w http.ResponseWriter, tmpl string, model interface{}) {
 	if err := templates.ExecuteTemplate(w, tmpl+".tmpl", model); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -172,6 +173,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "could not parse form", http.StatusInternalServerError)
+		return
 	}
 
 	// prefix
@@ -208,19 +210,26 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("%v is not a valid image ID"), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("%v is not a valid image ID", idStr), http.StatusBadRequest)
+		return
 	}
 	img := bulk.FindByID(model.Images, id)
+	if img == nil {
+		http.Error(w, fmt.Sprintf("no image found with ID: %v", id), http.StatusNotFound)
+		return
+	}
 	p := filepath.Join(*directory, img.Name)
 
 	f, err := os.Open(p)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not open image %v", p), http.StatusInternalServerError)
+		return
 	}
 	defer f.Close()
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not read image %v", p), http.StatusInternalServerError)
+		return
 	}
 	w.Write(data)
 }
