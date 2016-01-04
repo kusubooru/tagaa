@@ -168,7 +168,9 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("could not read current prefix from multipart file: %v", err), http.StatusInternalServerError)
 		return
 	}
-	err = bulk.Save(globalModel.Images, globalModel.Dir, globalModel.CSVFilename, prefix)
+	globalModel.Prefix = prefix
+
+	err = saveToCSVFile(globalModel)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not save file: %v", err), http.StatusInternalServerError)
 		return
