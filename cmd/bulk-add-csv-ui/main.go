@@ -138,10 +138,9 @@ func loadFromCSVFile(dir, csvFilename string) (*Model, error) {
 }
 
 func loadHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20)
 	f, h, err := r.FormFile("csvFilename")
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, fmt.Sprintf("could not parse multipart file: %v", err), http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()
