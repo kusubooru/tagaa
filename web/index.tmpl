@@ -46,7 +46,13 @@
 	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
 
 	<section>
+		{{ if .Images }}
 		<h2>Images</h2>
+		{{ else }}
+		<h2>No Images found in local directory</h2>
+		Add some and then refresh.
+		{{ end }}
+
 		{{ range .Images }}
 
 		<article>
