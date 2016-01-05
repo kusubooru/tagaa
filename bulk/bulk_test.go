@@ -51,3 +51,27 @@ func TestLoadCSV(t *testing.T) {
 		}
 	}
 }
+
+var currentPrefixTests = []struct {
+	indir  string
+	infile string
+	out    string
+	oerr   error
+}{
+	{"/local/path/dir", ",,,,", "/", nil},
+	{"/local/path/dir", "/server/path/dir,,,,", "/server/path", nil},
+	{"/local/path/dir", "", "", nil},
+}
+
+func TestCurrentPrefix(t *testing.T) {
+
+	for _, tt := range currentPrefixTests {
+		got, err := bulk.CurrentPrefix(tt.indir, strings.NewReader(tt.infile))
+		if want := tt.oerr; !reflect.DeepEqual(err, want) {
+			t.Errorf("CurrentPrefix(%q, %q) returned err %q, want %q", tt.indir, tt.infile, err, want)
+		}
+		if want := tt.out; !reflect.DeepEqual(got, want) {
+			t.Errorf("CurrentPrefix(%q, %q) => %q, want %q", tt.indir, tt.infile, got, want)
+		}
+	}
+}
