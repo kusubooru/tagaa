@@ -2,6 +2,9 @@ package bulk_test
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -144,5 +147,51 @@ func TestCombine(t *testing.T) {
 		if want := tt.out; !reflect.DeepEqual(got, want) {
 			t.Errorf("Combine(%q, %q) => %q, want %q", tt.images, tt.metadata, got, want)
 		}
+	}
+}
+
+func TestLoadImages_emptyDir(t *testing.T) {
+	dirname := ""
+	_, err := bulk.LoadImages(dirname)
+	if err == nil {
+		t.Errorf("LoadImages(%q) must return err", dirname)
+	}
+}
+
+func TestLoadImages(t *testing.T) {
+	const prefix = "local-tagger-test"
+
+	dirname, err := ioutil.TempDir("", prefix)
+	if err != nil {
+		t.Error("could not create temp dir")
+	}
+	fname, err := ioutil.TempFile(dirname, prefix)
+	if err != nil {
+		t.Error("could not create temp file")
+	}
+	jpgFilepath := fname.Name() + ".jpg"
+	err = os.Rename(fname.Name(), jpgFilepath)
+	if err != nil {
+		t.Error("could not rename temp file")
+	}
+
+	defer func() {
+		err := os.Remove(jpgFilepath)
+		if err != nil {
+			t.Error("could not clean up temp file")
+		}
+		err = os.Remove(dirname)
+		if err != nil {
+			t.Error("could not clean up temp dir")
+		}
+	}()
+
+	want := []bulk.Image{{ID: 0, Name: filepath.Base(jpgFilepath)}}
+	got, err := bulk.LoadImages(dirname)
+	if err != nil {
+		t.Errorf("LoadImages(%q) returned err %v", dirname, err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("LoadImages(%q) => %q, want %q", dirname, got, want)
 	}
 }
