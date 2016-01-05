@@ -17,6 +17,8 @@ import (
 	"github.com/kusubooru/local-tagger/bulk"
 )
 
+//go:generate go run generate/templates.go
+
 var fns = template.FuncMap{
 	"last": func(s []string) string {
 		if len(s) == 0 {
@@ -25,8 +27,6 @@ var fns = template.FuncMap{
 		return s[len(s)-1]
 	},
 }
-
-var templates = template.Must(template.New("").Funcs(fns).ParseGlob("web/*.tmpl"))
 
 var (
 	directory   = flag.String("dir", ".", "the directory that contains the images")
@@ -154,7 +154,7 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 	img, err := bulk.LoadCSV(f)
 	if err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not load image info from CSV File: %v", err)
-		render(w, "index", globalModel)
+		render(w, indexTmpl, globalModel)
 		return
 	}
 	globalModel.CSVFilename = h.Filename
@@ -186,11 +186,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		globalModel = m
 	}
 
-	render(w, "index", globalModel)
+	render(w, indexTmpl, globalModel)
 }
 
-func render(w http.ResponseWriter, tmpl string, model interface{}) {
-	if err := templates.ExecuteTemplate(w, tmpl+".tmpl", model); err != nil {
+func render(w http.ResponseWriter, t *template.Template, model interface{}) {
+	if err := t.Execute(w, model); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -222,7 +222,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := saveToCSVFile(globalModel); err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not save to CSV file: %v", err)
-		render(w, "index", globalModel)
+		render(w, indexTmpl, globalModel)
 	} else {
 		globalModel.Err = nil
 		http.Redirect(w, r, "/", http.StatusFound)
