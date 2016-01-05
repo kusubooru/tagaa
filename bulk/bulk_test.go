@@ -99,3 +99,50 @@ func TestFindByID(t *testing.T) {
 		}
 	}
 }
+
+var combineTests = []struct {
+	images   []bulk.Image
+	metadata []bulk.Image
+	out      []bulk.Image
+}{
+	{
+		[]bulk.Image{{ID: 0}},
+		[]bulk.Image{{ID: 0, Source: "source"}},
+		[]bulk.Image{{ID: 0}},
+	},
+	{
+		nil,
+		[]bulk.Image{{ID: 0, Source: "source"}},
+		nil,
+	},
+	{
+		[]bulk.Image{{ID: 0}},
+		nil,
+		[]bulk.Image{{ID: 0}},
+	},
+	{
+		[]bulk.Image{{Name: "img1"}},
+		[]bulk.Image{{Name: "img1", Source: "source"}},
+		[]bulk.Image{{Name: "img1", Source: "source"}},
+	},
+	{
+		[]bulk.Image{{Name: "img1"}, {Name: "img1"}},
+		[]bulk.Image{{Name: "img1", Source: "source"}},
+		[]bulk.Image{{Name: "img1", Source: "source"}, {Name: "img1"}},
+	},
+	{
+		[]bulk.Image{{Name: "img1"}, {Name: "img1"}},
+		[]bulk.Image{{Name: "img1", Source: "source"}, {Name: "img1", Rating: "q"}},
+		[]bulk.Image{{Name: "img1", Rating: "q"}, {Name: "img1"}},
+	},
+}
+
+func TestCombine(t *testing.T) {
+
+	for _, tt := range combineTests {
+		got := bulk.Combine(tt.images, tt.metadata)
+		if want := tt.out; !reflect.DeepEqual(got, want) {
+			t.Errorf("Combine(%q, %q) => %q, want %q", tt.images, tt.metadata, got, want)
+		}
+	}
+}
