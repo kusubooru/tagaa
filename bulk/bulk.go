@@ -88,7 +88,7 @@ func LoadImages(dir string) ([]Image, error) {
 // The metadata are returned as slice of images and should be combined with the
 // slice of images discovered by LoadImages by calling Combine.
 func LoadCSV(file io.Reader) ([]Image, error) {
-	var images []Image
+	images := []Image{}
 
 	r := csv.NewReader(file)
 	for {
@@ -100,13 +100,20 @@ func LoadCSV(file io.Reader) ([]Image, error) {
 			return nil, err
 		}
 
-		img := Image{
-			Name:   filepath.Base(record[0]),
-			Tags:   strings.Split(record[1], " "),
-			Source: record[2],
-			Rating: record[3],
+		if len(record) != 5 {
+			return nil, fmt.Errorf("invalid csv file format")
 		}
-		images = append(images, img)
+		// Image filepath (first column) should exist otherwise we cannot match
+		// the metadata with the images found under the directory.
+		if record[0] != "" {
+			img := Image{
+				Name:   filepath.Base(record[0]),
+				Tags:   strings.Split(record[1], " "),
+				Source: record[2],
+				Rating: record[3],
+			}
+			images = append(images, img)
+		}
 	}
 	return images, nil
 }
