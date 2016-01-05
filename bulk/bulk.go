@@ -122,6 +122,9 @@ func LoadCSV(file io.Reader) ([]Image, error) {
 // returning the combined result.
 func Combine(images, imagesWithInfo []Image) []Image {
 	for _, info := range imagesWithInfo {
+		if info.Name == "" {
+			continue
+		}
 		img := findByName(images, info.Name)
 		if img != nil {
 			img.Source = info.Source
