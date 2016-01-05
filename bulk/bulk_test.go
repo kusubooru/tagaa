@@ -75,3 +75,27 @@ func TestCurrentPrefix(t *testing.T) {
 		}
 	}
 }
+
+var findByIDTests = []struct {
+	images []bulk.Image
+	id     int
+	out    *bulk.Image
+}{
+	{nil, 0, nil},
+	{[]bulk.Image{}, 0, nil},
+	{[]bulk.Image{{ID: 1}}, 0, nil},
+	{[]bulk.Image{{ID: 1}}, 1, &bulk.Image{ID: 1}},
+	{[]bulk.Image{{ID: 2}, {ID: 1}}, 1, &bulk.Image{ID: 1}},
+	{[]bulk.Image{{ID: 2}, {ID: 3}, {ID: 1}}, 3, &bulk.Image{ID: 3}},
+	{[]bulk.Image{{ID: 2}, {ID: 3}, {ID: 1}}, 5, nil},
+}
+
+func TestFindByID(t *testing.T) {
+
+	for _, tt := range findByIDTests {
+		got := bulk.FindByID(tt.images, tt.id)
+		if want := tt.out; !reflect.DeepEqual(got, want) {
+			t.Errorf("FindByID(%q, %q) => %q, want %q", tt.images, tt.id, got, want)
+		}
+	}
+}
