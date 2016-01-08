@@ -259,3 +259,18 @@ func (e *errWriter) Write(p []byte) (n int, err error) {
 	err = e.err
 	return
 }
+
+// Failure case Reader helpers.
+func ErrReader(r io.Reader, err error) io.Reader {
+	return &errReader{r, err}
+}
+
+type errReader struct {
+	r   io.Reader
+	err error
+}
+
+func (e *errReader) Read(p []byte) (n int, err error) {
+	err = e.err
+	return
+}
