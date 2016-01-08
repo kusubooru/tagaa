@@ -26,6 +26,7 @@ var fns = template.FuncMap{
 		}
 		return s[len(s)-1]
 	},
+	"join": strings.Join,
 }
 
 var (

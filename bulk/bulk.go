@@ -25,18 +25,9 @@ import (
 type Image struct {
 	ID     int
 	Name   string
-	Tags   Tags
+	Tags   []string
 	Source string
 	Rating string
-}
-
-// Tags are the space separated tags for each image. It's used (instead of
-// []string) to print the tags easier in the HTML template with a custom
-// String() method.
-type Tags []string
-
-func (t Tags) String() string {
-	return strings.Join(t, " ")
 }
 
 var supportedExt = []string{"gif", "jpeg", "jpg", "png", "swf"}

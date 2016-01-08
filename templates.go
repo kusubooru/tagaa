@@ -105,7 +105,7 @@ input {
 				<legend>{{ .Name }}</legend>
 				<label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
 				<br>
-				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ .Tags }}</textarea>
+				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
 				<br>
 				<label for="sourceInput{{ .ID }}"><b>Source</b></label>
 				<br>

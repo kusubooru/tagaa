@@ -29,7 +29,7 @@ var loadCSVTests = []struct {
 	{
 		"/server/path/img1,tag1 tag2,source,s,",
 		[]bulk.Image{
-			{Name: "img1", Tags: (bulk.Tags)([]string{"tag1", "tag2"}), Source: "source", Rating: "s"},
+			{Name: "img1", Tags: []string{"tag1", "tag2"}, Source: "source", Rating: "s"},
 		},
 		nil,
 	},
@@ -38,8 +38,8 @@ var loadCSVTests = []struct {
 			",,,,\n" +
 			"/server/path/img2,tag1 tag2,source2,q,\n",
 		[]bulk.Image{
-			{Name: "img1", Tags: (bulk.Tags)([]string{"tag1", "tag2"}), Source: "source1", Rating: "s"},
-			{Name: "img2", Tags: (bulk.Tags)([]string{"tag1", "tag2"}), Source: "source2", Rating: "q"},
+			{Name: "img1", Tags: []string{"tag1", "tag2"}, Source: "source1", Rating: "s"},
+			{Name: "img2", Tags: []string{"tag1", "tag2"}, Source: "source2", Rating: "q"},
 		},
 		nil,
 	},
