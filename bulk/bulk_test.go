@@ -46,7 +46,6 @@ var loadCSVTests = []struct {
 }
 
 func TestLoadCSV(t *testing.T) {
-
 	for _, tt := range loadCSVTests {
 		got, err := bulk.LoadCSV(strings.NewReader(tt.in))
 		if want := tt.oerr; !reflect.DeepEqual(err, want) {
@@ -79,7 +78,6 @@ var currentPrefixTests = []struct {
 }
 
 func TestCurrentPrefix(t *testing.T) {
-
 	for _, tt := range currentPrefixTests {
 		got, err := bulk.CurrentPrefix(tt.indir, strings.NewReader(tt.infile))
 		if want := tt.oerr; !reflect.DeepEqual(err, want) {
@@ -106,7 +104,6 @@ var findByIDTests = []struct {
 }
 
 func TestFindByID(t *testing.T) {
-
 	for _, tt := range findByIDTests {
 		got := bulk.FindByID(tt.images, tt.id)
 		if want := tt.out; !reflect.DeepEqual(got, want) {
@@ -153,7 +150,6 @@ var combineTests = []struct {
 }
 
 func TestCombine(t *testing.T) {
-
 	for _, tt := range combineTests {
 		got := bulk.Combine(tt.images, tt.metadata)
 		if want := tt.out; !reflect.DeepEqual(got, want) {
