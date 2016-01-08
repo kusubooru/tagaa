@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kusubooru/local-tagger/bulk"
 )
@@ -35,6 +36,7 @@ var (
 	csvFilename = flag.String("csv", "bulk.csv", "the name of the CSV file")
 	pathPrefix  = flag.String("prefix", "", "the path that should be prefixed before the directory and the image name on the CSV file")
 	port        = flag.String("port", "8080", "server port")
+	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
 )
 
 func usage() {
@@ -88,12 +90,13 @@ func run() error {
 
 	go func() {
 		localURL := fmt.Sprintf("http://localhost:%v", *port)
-		if err := browserOpen(localURL); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: could not open browser, please visit %v manually.\n", localURL)
+		if waitServer(localURL) && *openBrowser && startBrowser(localURL) {
+			log.Printf("A browser window should open. If not, please visit %s", localURL)
+		} else {
+			log.Printf("Please open your web browser and visit %s", localURL)
 		}
 	}()
 
-	fmt.Println("Starting server at :" + *port)
 	if err := http.ListenAndServe(":"+*port, nil); err != nil {
 		return err
 	}
@@ -292,20 +295,35 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func browserOpen(input string) error {
-	var err error
+// startBrowser tries to open the URL in a browser, and returns
+// whether it succeed.
+func startBrowser(url string) bool {
+	// try to start the browser
+	var args []string
 	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", input).Start()
-	case "windows":
-		err = exec.Command("cmd", "/C", "start", "", input).Start()
 	case "darwin":
-		err = exec.Command("open", input).Start()
+		args = []string{"open"}
+	case "windows":
+		args = []string{"cmd", "/c", "start"}
 	default:
-		err = fmt.Errorf("unsupported platform")
+		args = []string{"xdg-open"}
 	}
-	if err != nil {
-		return err
+	cmd := exec.Command(args[0], append(args[1:], url)...)
+	return cmd.Start() == nil
+}
+
+// waitServer waits some time for the http Server to start
+// serving url. The return value reports whether it starts.
+func waitServer(url string) bool {
+	tries := 20
+	for tries > 0 {
+		resp, err := http.Get(url)
+		if err == nil {
+			resp.Body.Close()
+			return true
+		}
+		time.Sleep(100 * time.Millisecond)
+		tries--
 	}
-	return nil
+	return false
 }
