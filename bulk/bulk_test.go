@@ -58,6 +58,15 @@ func TestLoadCSV(t *testing.T) {
 	}
 }
 
+func TestLoadCSV_readFail(t *testing.T) {
+	r := strings.NewReader("")
+	in := ErrReader(r, fmt.Errorf("read fail"))
+	got, err := bulk.LoadCSV(in)
+	if err == nil {
+		t.Errorf("LoadCSV with read failure must return err but returned %q, %q", got, err)
+	}
+}
+
 var currentPrefixTests = []struct {
 	indir  string
 	infile string
