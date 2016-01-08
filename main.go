@@ -230,7 +230,21 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveToCSVFile(m *model) error {
-	return bulk.Save(m.Images, m.Dir, m.CSVFilename, m.Prefix)
+	csvFilepath := filepath.Join(m.Dir, m.CSVFilename)
+	f, err := os.Create(csvFilepath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := f.Close(); err != nil {
+			err = cerr
+		}
+	}()
+
+	if err := bulk.Save(f, m.Images, m.Dir, m.Prefix); err != nil {
+		return err
+	}
+	return err
 }
 
 func serveImage(w http.ResponseWriter, r *http.Request) {

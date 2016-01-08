@@ -1,7 +1,10 @@
 package bulk_test
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -194,4 +197,64 @@ func TestLoadImages(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("LoadImages(%q) => %q, want %q", dirname, got, want)
 	}
+}
+
+var saveTests = []struct {
+	images []bulk.Image
+	dir    string
+	prefix string
+	out    string
+}{
+	{
+		[]bulk.Image{{ID: 0, Name: "img1", Source: "source1", Rating: "s"}},
+		"/local/path/dir",
+		"/server/path",
+		"/server/path/dir/img1,,source1,s,\n",
+	},
+	{
+		[]bulk.Image{
+			{ID: 0, Name: "img1", Source: "source1", Rating: "s"},
+			{ID: 1, Name: "img2", Source: "source2", Rating: "q"},
+		},
+		"/local/path/dir",
+		"/server/path",
+		"/server/path/dir/img1,,source1,s,\n/server/path/dir/img2,,source2,q,\n",
+	},
+}
+
+func TestSave(t *testing.T) {
+	for _, tt := range saveTests {
+		var b bytes.Buffer
+		err := bulk.Save(&b, tt.images, tt.dir, tt.prefix)
+		if err != nil {
+			t.Errorf("Save(%q, %q, %q) returned err %q", tt.images, tt.dir, tt.prefix)
+		}
+		if got, want := b.String(), tt.out; got != want {
+			t.Errorf("Save(%q, %q, %q) => %q, want %q", tt.images, tt.dir, tt.prefix, got, want)
+		}
+	}
+}
+
+func TestSave_writeFail(t *testing.T) {
+	var b bytes.Buffer
+	in := ErrWriter(&b, fmt.Errorf("write fail"))
+	err := bulk.Save(in, nil, "", "")
+	if err == nil {
+		t.Errorf("Save with write failure must return err but returned %q", err)
+	}
+}
+
+// Failure case Writer helper.
+func ErrWriter(w io.Writer, err error) io.Writer {
+	return &errWriter{w, err}
+}
+
+type errWriter struct {
+	w   io.Writer
+	err error
+}
+
+func (e *errWriter) Write(p []byte) (n int, err error) {
+	err = e.err
+	return
 }

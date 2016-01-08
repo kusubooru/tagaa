@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -197,17 +196,10 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 	return prefix, nil
 }
 
-// Save will write the image metadata to a CSV file with csvFilename under the
-// dir path. It will keep the base of the dir path and replace the prefix with
-// the provided one.
-func Save(images []Image, dir, csvFilename, prefix string) error {
-	csvFile := filepath.Join(dir, csvFilename)
-	f, err := os.Create(csvFile)
-	if err != nil {
-		return err
-	}
-
-	w := csv.NewWriter(f)
+// Save will write the image metadata to an open for writing file. It will
+// keep the base of the dir path and replace the prefix with the provided one.
+func Save(file io.Writer, images []Image, dir, prefix string) error {
+	w := csv.NewWriter(file)
 	w.WriteAll(toRecords(images, dir, prefix))
 
 	if err := w.Error(); err != nil {
