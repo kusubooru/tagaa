@@ -156,6 +156,11 @@ var combineTests = []struct {
 		[]bulk.Image{{Name: "img1", Source: "source"}, {Name: "img1", Rating: "q"}},
 		[]bulk.Image{{Name: "img1", Rating: "q"}, {Name: "img1"}},
 	},
+	{
+		[]bulk.Image{{Name: "img1"}, {Name: "img2"}},
+		[]bulk.Image{{Name: "img1", Source: "source1"}, {Name: "img2", Source: "source2"}, {Name: "img3", Source: "source3"}},
+		[]bulk.Image{{Name: "img1", Source: "source1"}, {Name: "img2", Source: "source2"}},
+	},
 }
 
 func TestCombine(t *testing.T) {
