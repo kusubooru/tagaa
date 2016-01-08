@@ -177,6 +177,9 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 	folder := filepath.Base(dir)
 	sep := fmt.Sprintf("%c", filepath.Separator)
 	prefix := sep
+	if !strings.Contains(record[0], folder) {
+		return prefix, nil
+	}
 	parts := strings.Split(record[0], sep)
 	for _, p := range parts {
 		if p == folder {
