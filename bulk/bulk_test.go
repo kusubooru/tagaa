@@ -89,6 +89,15 @@ func TestCurrentPrefix(t *testing.T) {
 	}
 }
 
+func TestCurrentPrefix_readFail(t *testing.T) {
+	r := strings.NewReader("")
+	in := ErrReader(r, fmt.Errorf("read fail"))
+	got, err := bulk.CurrentPrefix("", in)
+	if err == nil {
+		t.Errorf("CurrentPrefix with read failure must return err but returned %q, %q", got, err)
+	}
+}
+
 var findByIDTests = []struct {
 	images []bulk.Image
 	id     int
