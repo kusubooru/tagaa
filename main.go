@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"os/exec"
@@ -101,6 +102,7 @@ func run() error {
 }
 
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
+
 	m := &model{Dir: dir, CSVFilename: csvFilename}
 
 	// Loading images from folder
@@ -142,7 +144,8 @@ func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 func loadHandler(w http.ResponseWriter, r *http.Request) {
 	f, h, err := r.FormFile("csvFilename")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not parse multipart file: %v", err), http.StatusInternalServerError)
+		globalModel.Err = fmt.Errorf("Error: could not parse multipart file: %v", err)
+		render(w, indexTmpl, globalModel)
 		return
 	}
 	defer func() {
@@ -151,32 +154,37 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	// TODO: Extract load logic to function.
-	img, err := bulk.LoadCSV(f)
-	if err != nil {
-		globalModel.Err = fmt.Errorf("Error: could not load image info from CSV File: %v", err)
+	if err := addFromMultipartFile(globalModel, f); err != nil {
+		globalModel.Err = fmt.Errorf("Error: could not load image metadata from multipart CSV File: %v", err)
 		render(w, indexTmpl, globalModel)
 		return
 	}
 	globalModel.CSVFilename = h.Filename
-	globalModel.Images = bulk.Combine(globalModel.Images, img)
-	if _, err = f.Seek(0, 0); err != nil {
-		http.Error(w, fmt.Sprintf("could not seek multipart file: %v", err), http.StatusInternalServerError)
-		return
-	}
-	prefix, err := bulk.CurrentPrefix(globalModel.Dir, f)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("could not read current prefix from multipart file: %v", err), http.StatusInternalServerError)
-		return
-	}
-	globalModel.Prefix = prefix
 
 	err = saveToCSVFile(globalModel)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not save file: %v", err), http.StatusInternalServerError)
+		globalModel.Err = fmt.Errorf("Error: could not save file to disk: %v", err)
+		render(w, indexTmpl, globalModel)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+func addFromMultipartFile(m *model, file multipart.File) error {
+	imgMetadata, err := bulk.LoadCSV(file)
+	if err != nil {
+		return fmt.Errorf("could not load image info from CSV File: %v", err)
+	}
+	if _, err = file.Seek(0, 0); err != nil {
+		return fmt.Errorf("could not seek multipart file: %v", err)
+	}
+	prefix, err := bulk.CurrentPrefix(m.Dir, file)
+	if err != nil {
+		return fmt.Errorf("could not read current prefix from multipart file: %v", err)
+	}
+	m.Prefix = prefix
+	m.Images = bulk.Combine(m.Images, imgMetadata)
+
+	return nil
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
