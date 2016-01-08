@@ -287,7 +287,7 @@ func TestSave_writeFail(t *testing.T) {
 	}
 }
 
-// Failure case Writer helper.
+// ErrWriter returns a writer that always fails with the provided error.
 func ErrWriter(w io.Writer, err error) io.Writer {
 	return &errWriter{w, err}
 }
@@ -302,7 +302,7 @@ func (e *errWriter) Write(p []byte) (n int, err error) {
 	return
 }
 
-// Failure case Reader helpers.
+// ErrReader returns a reader that always fails with the provided error.
 func ErrReader(r io.Reader, err error) io.Reader {
 	return &errReader{r, err}
 }
