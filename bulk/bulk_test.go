@@ -236,9 +236,10 @@ func TestSave(t *testing.T) {
 }
 
 func TestSave_writeFail(t *testing.T) {
+	images := []bulk.Image{{ID: 0}, {ID: 1}}
 	var b bytes.Buffer
 	in := ErrWriter(&b, fmt.Errorf("write fail"))
-	err := bulk.Save(in, nil, "", "")
+	err := bulk.Save(in, images, "", "")
 	if err == nil {
 		t.Errorf("Save with write failure must return err but returned %q", err)
 	}
