@@ -175,35 +175,63 @@ func TestLoadImages_emptyDir(t *testing.T) {
 	}
 }
 
+// TempFileWithSuffix creates a temp file and renames it by adding a suffix. It
+// calls ioutil.Tempfile, then renames with os.Rename and finally rereads the
+// renamed file with os.Open.
+func TempFileWithSuffix(dir, prefix, suffix string) (f *os.File, err error) {
+	f, err = ioutil.TempFile(dir, prefix)
+	if err != nil {
+		err = fmt.Errorf("could not create temp file: %v", err)
+		return
+	}
+	newName := f.Name() + "." + suffix
+	err = os.Rename(f.Name(), newName)
+	if err != nil {
+		if rerr := os.Remove(f.Name()); err != nil {
+			err = fmt.Errorf("could not clean up temp file: %v", rerr)
+			return
+		}
+		err = fmt.Errorf("could not rename temp file: %v", err)
+		return
+	}
+	return os.Open(newName)
+}
+
 func TestLoadImages(t *testing.T) {
 	const prefix = "local-tagger-test"
 
 	dirname, err := ioutil.TempDir("", prefix)
 	if err != nil {
-		t.Error("could not create temp dir")
+		t.Error("could not create temp dir: %v", err)
 	}
-	fname, err := ioutil.TempFile(dirname, prefix)
-	if err != nil {
-		t.Error("could not create temp file")
-	}
-	jpgFilepath := fname.Name() + ".jpg"
-	err = os.Rename(fname.Name(), jpgFilepath)
-	if err != nil {
-		t.Error("could not rename temp file")
-	}
-
 	defer func() {
-		err := os.Remove(jpgFilepath)
-		if err != nil {
-			t.Error("could not clean up temp file")
-		}
-		err = os.Remove(dirname)
-		if err != nil {
-			t.Error("could not clean up temp dir")
+		if err := os.Remove(dirname); err != nil {
+			t.Error("could not clean up temp dir: %v", err)
 		}
 	}()
 
-	want := []bulk.Image{{ID: 0, Name: filepath.Base(jpgFilepath)}}
+	jpgf, err := TempFileWithSuffix(dirname, prefix, "jpg")
+	if err != nil {
+		t.Error("could not create temp jpg file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(jpgf.Name()); err != nil {
+			t.Error("could not clean up temp jpg file: %v", err)
+		}
+	}()
+
+	// unsupported type case (ico is not supported)
+	icof, err := TempFileWithSuffix(dirname, prefix, "ico")
+	if err != nil {
+		t.Error("could not create temp ico file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(icof.Name()); err != nil {
+			t.Error("could not clean up temp ico file: %v", err)
+		}
+	}()
+
+	want := []bulk.Image{{ID: 0, Name: filepath.Base(jpgf.Name())}}
 	got, err := bulk.LoadImages(dirname)
 	if err != nil {
 		t.Errorf("LoadImages(%q) returned err %v", dirname, err)
