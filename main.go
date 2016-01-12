@@ -66,6 +66,19 @@ func main() {
 	}
 }
 
+func createFile(file string) error {
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+	return err
+}
+
 func run() error {
 	flag.Usage = usage
 	flag.Parse()
@@ -80,6 +93,14 @@ func run() error {
 		return err
 	}
 	*directory = d
+
+	// If CSV File does not exist, we create it.
+	csvFile := filepath.Join(*directory, *csvFilename)
+	if _, err := os.Stat(csvFile); os.IsNotExist(err) {
+		if err := createFile(csvFile); err != nil {
+			return err
+		}
+	}
 
 	m, err := loadFromCSVFile(*directory, *csvFilename)
 	if err != nil {
