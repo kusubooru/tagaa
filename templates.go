@@ -91,6 +91,8 @@ h1 small {
 	<br>
 	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
 
+	<input id="scroll" type="hidden" name="scroll" value="">
+
 	<section>
 		{{ if .Images }}
 		<h2>Images</h2>
@@ -102,11 +104,9 @@ h1 small {
 		{{ range .Images }}
 
 		<article>
-			<h3>{{ .Name }}</h3>
-			<img src="/img/{{ .ID }}" alt="{{ .Name }}">
-
 
 			<fieldset>
+				<a id="tags{{ .ID }}"></a>
 				<legend>{{ .Name }}</legend>
 				<label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
 				<br>
@@ -124,12 +124,26 @@ h1 small {
 				<label for="qRadio{{ .ID }}">Questionable</label>
 				<input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
 				<label for="eRadio{{ .ID }}">Explicit</label>
+				<br>
+				<input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
+				<a id="img{{ .ID }}"></a>
+				<h3>{{ .Name }}</h3>
+				<a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
 			</fieldset>
 		</article>
 
+		<br>
 		{{ end }}
 	</section>
 </form>
+{{ end }}
+{{ define "script" }}
+<script>
+function setScroll(e) {
+	var scroll = e.getAttribute("data-scroll");
+	document.getElementById("scroll").value = scroll;
+}
+</script>
 {{ end }}
 `
 )

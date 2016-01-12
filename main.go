@@ -267,13 +267,14 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 			globalModel.Images[img.ID].Rating = rating[0]
 		}
 	}
+	scroll := r.PostForm["scroll"][0]
 
 	if err := saveToCSVFile(globalModel); err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not save to CSV file: %v", err)
 		render(w, indexTmpl, globalModel)
 	} else {
 		globalModel.Err = nil
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/"+scroll, http.StatusFound)
 	}
 }
 
