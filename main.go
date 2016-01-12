@@ -21,6 +21,8 @@ import (
 
 //go:generate go run generate/templates.go
 
+const TheVersion = "1.0.0"
+
 var fns = template.FuncMap{
 	"last": func(s []string) string {
 		if len(s) == 0 {
@@ -37,6 +39,7 @@ var (
 	pathPrefix  = flag.String("prefix", "", "the path that should be prefixed before the directory and the image name on the CSV file")
 	port        = flag.String("port", "8080", "server port")
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
+	version     = flag.Bool("version", false, "print program version")
 )
 
 func usage() {
@@ -51,6 +54,7 @@ type model struct {
 	Dir         string
 	CSVFilename string
 	Images      []bulk.Image
+	Version     string
 }
 
 var globalModel *model
@@ -65,6 +69,11 @@ func main() {
 func run() error {
 	flag.Usage = usage
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("local-tagger%v\n", TheVersion)
+		return nil
+	}
 
 	d, err := filepath.Abs(*directory)
 	if err != nil {
@@ -108,7 +117,7 @@ func run() error {
 
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 
-	m := &model{Dir: dir, CSVFilename: csvFilename}
+	m := &model{Dir: dir, CSVFilename: csvFilename, Version: TheVersion}
 
 	// Loading images from folder
 	images, err := bulk.LoadImages(dir)

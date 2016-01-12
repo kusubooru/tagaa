@@ -17,23 +17,27 @@ var (
 <head>
 <meta charset="utf-8">
 
-<title>Bulk Add CSV UI</title>
-<meta name="description" content="Interface for the Bulk Add CSV Shimmie2 extension">
+<title>local-tagger{{.Version}}</title>
+<meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
 <meta name="author" content="kusubooru">
 
 <style>
 html {
-    font-family: sans-serif;
+	font-family: sans-serif;
 }
 input {
-    margin-bottom: 0.6em;
+	margin-bottom: 0.6em;
 }
 #err {
-    background: #f2dede;
-    display: block;
-    padding: 15px;
-    margin-bottom: 10px;
-    color: #333;
+	background: #f2dede;
+	display: block;
+	padding: 15px;
+	margin-bottom: 10px;
+	color: #333;
+}
+h1 small {
+	font-size:65%;
+	color:#777;
 }
 </style>
 {{ template "style" . }}
@@ -44,6 +48,7 @@ input {
 </head>
 
 <body>
+<h1>local-tagger <small>v{{.Version}}</small></h1>
 {{ template "content" . }}
 <script></script>
 {{ template "script" . }}
