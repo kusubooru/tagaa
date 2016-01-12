@@ -85,12 +85,14 @@ func run() error {
 	http.Handle("/", http.HandlerFunc(indexHandler))
 	http.Handle("/load", http.HandlerFunc(loadHandler))
 	http.Handle("/update", http.HandlerFunc(updateHandler))
+	http.Handle("/ok/", http.HandlerFunc(okHandler))
 	http.Handle("/img/", http.HandlerFunc(serveImage))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
 	go func() {
 		localURL := fmt.Sprintf("http://localhost:%v", *port)
-		if waitServer(localURL) && *openBrowser && startBrowser(localURL) {
+		okURL := fmt.Sprintf("%v/ok", localURL)
+		if waitServer(okURL) && *openBrowser && startBrowser(localURL) {
 			log.Printf("A browser window should open. If not, please visit %s", localURL)
 		} else {
 			log.Printf("Please open your web browser and visit %s", localURL)
@@ -188,6 +190,10 @@ func addFromMultipartFile(m *model, file multipart.File) error {
 	m.Images = bulk.Combine(m.Images, imgMetadata)
 
 	return nil
+}
+
+func okHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("ok"))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
