@@ -114,7 +114,7 @@ func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 		return nil, err
 	}
 
-	f, err := os.OpenFile(filepath.Join(dir, csvFilename), os.O_RDONLY|os.O_CREATE, 0644)
+	f, err := os.Open(filepath.Join(dir, csvFilename))
 	if err != nil {
 		return nil, err
 	}
