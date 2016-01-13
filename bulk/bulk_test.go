@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/kusubooru/local-tagger/bulk"
 )
@@ -192,77 +192,87 @@ func TestCombine(t *testing.T) {
 	}
 }
 
-func TestLoadImages_emptyDir(t *testing.T) {
-	dirname := ""
-	_, err := bulk.LoadImages(dirname)
-	if err == nil {
-		t.Errorf("LoadImages(%q) must return err", dirname)
-	}
+type FileInfoMock struct {
+	name  string
+	isDir bool
 }
 
-// TempFileWithSuffix creates a temp file and renames it by adding a suffix. It
-// calls ioutil.Tempfile, then renames with os.Rename and finally rereads the
-// renamed file with os.Open.
-func TempFileWithSuffix(dir, prefix, suffix string) (f *os.File, err error) {
-	f, err = ioutil.TempFile(dir, prefix)
-	if err != nil {
-		err = fmt.Errorf("could not create temp file: %v", err)
-		return
-	}
-	newName := f.Name() + "." + suffix
-	err = os.Rename(f.Name(), newName)
-	if err != nil {
-		if rerr := os.Remove(f.Name()); err != nil {
-			err = fmt.Errorf("could not clean up temp file: %v", rerr)
-			return
-		}
-		err = fmt.Errorf("could not rename temp file: %v", err)
-		return
-	}
-	return os.Open(newName)
+func (fim FileInfoMock) Name() string       { return fim.name }
+func (fim FileInfoMock) Size() int64        { return 0 }
+func (fim FileInfoMock) Mode() os.FileMode  { return 0 }
+func (fim FileInfoMock) ModTime() time.Time { return time.Now() }
+func (fim FileInfoMock) IsDir() bool        { return fim.isDir }
+func (fim FileInfoMock) Sys() interface{}   { return nil }
+
+var loadImagesTests = []struct {
+	in  []os.FileInfo
+	out []bulk.Image
+}{
+	// Empty case.
+	{
+		[]os.FileInfo{},
+		[]bulk.Image{},
+	},
+	// Ignoring .csv and folders.
+	{
+		[]os.FileInfo{
+			FileInfoMock{name: "bulk.csv"},
+			FileInfoMock{name: "folder1", isDir: true},
+			FileInfoMock{name: "folder2", isDir: true},
+		},
+		[]bulk.Image{},
+	},
+	// Ignoring .ico and folder.
+	{
+		[]os.FileInfo{
+			FileInfoMock{name: "a.jpg"},
+			FileInfoMock{name: "b.ico"},
+			FileInfoMock{name: "folder", isDir: true},
+		},
+		[]bulk.Image{
+			{ID: 0, Name: "a.jpg"},
+		},
+	},
+	// All supported types.
+	{
+		[]os.FileInfo{
+			FileInfoMock{name: "a.gif"},
+			FileInfoMock{name: "b.jpeg"},
+			FileInfoMock{name: "c.jpg"},
+			FileInfoMock{name: "e.png"},
+			FileInfoMock{name: "f.swf"},
+		},
+		[]bulk.Image{
+			{ID: 0, Name: "a.gif"},
+			{ID: 1, Name: "b.jpeg"},
+			{ID: 2, Name: "c.jpg"},
+			{ID: 3, Name: "e.png"},
+			{ID: 4, Name: "f.swf"},
+		},
+	},
+	// We  depend on iotuil.ReadDir to sort the dir entries.  If for some
+	// reason we get unsorted dir entries we treat that order as the correct
+	// one.
+	{
+		[]os.FileInfo{
+			FileInfoMock{name: "zzz.jpg"},
+			FileInfoMock{name: "bbb.jpg"},
+			FileInfoMock{name: "aaa.jpg"},
+		},
+		[]bulk.Image{
+			{ID: 0, Name: "aaa.jpg"},
+			{ID: 1, Name: "bbb.jpg"},
+			{ID: 2, Name: "zzz.jpg"},
+		},
+	},
 }
 
 func TestLoadImages(t *testing.T) {
-	const prefix = "local-tagger-test"
-
-	dirname, err := ioutil.TempDir("", prefix)
-	if err != nil {
-		t.Errorf("could not create temp dir: %v", err)
-	}
-	defer func() {
-		if err := os.Remove(dirname); err != nil {
-			t.Errorf("could not clean up temp dir: %v", err)
+	for _, tt := range loadImagesTests {
+		got := bulk.LoadImages(tt.in)
+		if want := tt.out; !reflect.DeepEqual(got, want) {
+			t.Errorf("LoadImages(%q) => %q, want %q", tt.in, got, want)
 		}
-	}()
-
-	jpgf, err := TempFileWithSuffix(dirname, prefix, "jpg")
-	if err != nil {
-		t.Errorf("could not create temp jpg file: %v", err)
-	}
-	defer func() {
-		if err := os.Remove(jpgf.Name()); err != nil {
-			t.Errorf("could not clean up temp jpg file: %v", err)
-		}
-	}()
-
-	// unsupported type case (ico is not supported)
-	icof, err := TempFileWithSuffix(dirname, prefix, "ico")
-	if err != nil {
-		t.Errorf("could not create temp ico file: %v", err)
-	}
-	defer func() {
-		if err := os.Remove(icof.Name()); err != nil {
-			t.Errorf("could not clean up temp ico file: %v", err)
-		}
-	}()
-
-	want := []bulk.Image{{ID: 0, Name: filepath.Base(jpgf.Name())}}
-	got, err := bulk.LoadImages(dirname)
-	if err != nil {
-		t.Errorf("LoadImages(%q) returned err %v", dirname, err)
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("LoadImages(%q) => %q, want %q", dirname, got, want)
 	}
 }
 

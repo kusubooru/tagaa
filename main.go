@@ -145,10 +145,11 @@ func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 	}
 
 	// Loading images from folder
-	images, err := bulk.LoadImages(dir)
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
+	images := bulk.LoadImages(files)
 
 	f, err := os.Open(filepath.Join(dir, csvFilename))
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -46,21 +46,19 @@ func isSupportedType(name string) bool {
 	return false
 }
 
-// LoadImages takes the path of a folder as input and scans it for files with
-// one of the following extensions: "gif", "jpeg", "jpg", "png", "swf"
+// LoadImages expects a slice of directory entries (os.FileInfo) which is the
+// result of a read directory like ioutil.ReadDir. It loops through the slice,
+// ignoring any directory and keeps only the files with one of the following
+// extensions: "gif", "jpeg", "jpg", "png", "swf"
 //
 // It returns a slice of images without metadata, using the filename as Name
 // and the order the files were found as an increasing ID starting from 0.
 //
-// In case of a CSV file, the image metadata can be read using LoadCSV and
-// combined with the images (discovered by LoadImages) using Combine.
-func LoadImages(dir string) ([]Image, error) {
-	var images []Image
+// In case of a CSV file, the image metadata should be read using LoadCSV and
+// then combined with the images (discovered by LoadImages) using Combine.
+func LoadImages(files []os.FileInfo) []Image {
+	images := []Image{}
 
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
 	id := 0
 	for _, f := range files {
 		if !f.IsDir() {
@@ -71,7 +69,7 @@ func LoadImages(dir string) ([]Image, error) {
 			}
 		}
 	}
-	return images, nil
+	return images
 }
 
 // LoadCSV loads the image metadata from a CSV file that is open for reading.
