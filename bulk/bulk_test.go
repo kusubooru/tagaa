@@ -260,9 +260,9 @@ var loadImagesTests = []struct {
 			FileInfoMock{name: "aaa.jpg"},
 		},
 		[]bulk.Image{
-			{ID: 0, Name: "aaa.jpg"},
+			{ID: 0, Name: "zzz.jpg"},
 			{ID: 1, Name: "bbb.jpg"},
-			{ID: 2, Name: "zzz.jpg"},
+			{ID: 2, Name: "aaa.jpg"},
 		},
 	},
 }
