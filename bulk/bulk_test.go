@@ -212,32 +212,32 @@ func TestLoadImages(t *testing.T) {
 
 	dirname, err := ioutil.TempDir("", prefix)
 	if err != nil {
-		t.Error("could not create temp dir: %v", err)
+		t.Errorf("could not create temp dir: %v", err)
 	}
 	defer func() {
 		if err := os.Remove(dirname); err != nil {
-			t.Error("could not clean up temp dir: %v", err)
+			t.Errorf("could not clean up temp dir: %v", err)
 		}
 	}()
 
 	jpgf, err := TempFileWithSuffix(dirname, prefix, "jpg")
 	if err != nil {
-		t.Error("could not create temp jpg file: %v", err)
+		t.Errorf("could not create temp jpg file: %v", err)
 	}
 	defer func() {
 		if err := os.Remove(jpgf.Name()); err != nil {
-			t.Error("could not clean up temp jpg file: %v", err)
+			t.Errorf("could not clean up temp jpg file: %v", err)
 		}
 	}()
 
 	// unsupported type case (ico is not supported)
 	icof, err := TempFileWithSuffix(dirname, prefix, "ico")
 	if err != nil {
-		t.Error("could not create temp ico file: %v", err)
+		t.Errorf("could not create temp ico file: %v", err)
 	}
 	defer func() {
 		if err := os.Remove(icof.Name()); err != nil {
-			t.Error("could not clean up temp ico file: %v", err)
+			t.Errorf("could not clean up temp ico file: %v", err)
 		}
 	}()
 
@@ -279,7 +279,7 @@ func TestSave(t *testing.T) {
 		var b bytes.Buffer
 		err := bulk.Save(&b, tt.images, tt.dir, tt.prefix)
 		if err != nil {
-			t.Errorf("Save(%q, %q, %q) returned err %q", tt.images, tt.dir, tt.prefix)
+			t.Errorf("Save(%q, %q, %q) returned err %q", tt.images, tt.dir, tt.prefix, err)
 		}
 		if got, want := b.String(), tt.out; got != want {
 			t.Errorf("Save(%q, %q, %q) => %q, want %q", tt.images, tt.dir, tt.prefix, got, want)
