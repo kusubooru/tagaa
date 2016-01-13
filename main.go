@@ -21,7 +21,7 @@ import (
 
 //go:generate go run generate/templates.go
 
-const TheVersion = "1.0.0"
+const theVersion = "1.0.0"
 
 var fns = template.FuncMap{
 	"last": func(s []string) string {
@@ -85,7 +85,7 @@ func run() error {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("local-tagger%v\n", TheVersion)
+		fmt.Printf("local-tagger%v\n", theVersion)
 		return nil
 	}
 
@@ -139,7 +139,7 @@ func run() error {
 
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 
-	m := &model{Dir: dir, CSVFilename: csvFilename, Version: TheVersion}
+	m := &model{Dir: dir, CSVFilename: csvFilename, Version: theVersion}
 	if globalModel != nil {
 		m.UseLinuxSep = globalModel.UseLinuxSep
 	}
