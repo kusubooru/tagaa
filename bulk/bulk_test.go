@@ -267,16 +267,25 @@ func TestLoadImages(t *testing.T) {
 }
 
 var saveTests = []struct {
-	images []bulk.Image
-	dir    string
-	prefix string
-	out    string
+	images   []bulk.Image
+	dir      string
+	prefix   string
+	useLinux bool
+	out      string
 }{
 	{
 		[]bulk.Image{{ID: 0, Name: "img1", Source: "source1", Rating: "s"}},
 		filepath.Join("/", "local", "path", "dir"),
 		filepath.Join("/", "server", "path"),
+		false,
 		filepath.Join("/", "server", "path", "dir", "img1") + ",,source1,s,\n",
+	},
+	{
+		[]bulk.Image{{ID: 0, Name: "img1", Source: "source1", Rating: "s"}},
+		filepath.Join("/", "local", "path", "dir"),
+		filepath.Join("/", "server", "path"),
+		true,
+		"/server/path/dir/img1,,source1,s,\n",
 	},
 	{
 		[]bulk.Image{
@@ -285,6 +294,7 @@ var saveTests = []struct {
 		},
 		filepath.Join("/", "local", "path", "dir"),
 		filepath.Join("/", "server", "path"),
+		false,
 		filepath.Join("/", "server", "path", "dir", "img1") + ",,source1,s,\n" + filepath.Join("/", "server", "path", "dir", "img2") + ",,source2,q,\n",
 	},
 }
@@ -292,7 +302,7 @@ var saveTests = []struct {
 func TestSave(t *testing.T) {
 	for _, tt := range saveTests {
 		var b bytes.Buffer
-		err := bulk.Save(&b, tt.images, tt.dir, tt.prefix)
+		err := bulk.Save(&b, tt.images, tt.dir, tt.prefix, tt.useLinux)
 		if err != nil {
 			t.Errorf("Save(%q, %q, %q) returned err %q", tt.images, tt.dir, tt.prefix, err)
 		}
@@ -306,7 +316,7 @@ func TestSave_writeFail(t *testing.T) {
 	images := []bulk.Image{{ID: 0}, {ID: 1}}
 	var b bytes.Buffer
 	in := ErrWriter(&b, fmt.Errorf("write fail"))
-	err := bulk.Save(in, images, "", "")
+	err := bulk.Save(in, images, "", "", false)
 	if err == nil {
 		t.Errorf("Save with write failure must return err but returned %q", err)
 	}

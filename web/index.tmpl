@@ -27,7 +27,11 @@
 	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace local directory prefix)</label>
 	<br>
 	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
-
+	<br>
+	<label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
+	<br>
+	<input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
+	(Check, if working on a windows machine and want to upload to a Linux machine)
 	<input id="scroll" type="hidden" name="scroll" value="">
 
 	<section>

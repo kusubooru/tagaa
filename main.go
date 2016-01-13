@@ -55,6 +55,7 @@ type model struct {
 	CSVFilename string
 	Images      []bulk.Image
 	Version     string
+	UseLinuxSep bool
 }
 
 var globalModel *model
@@ -139,6 +140,9 @@ func run() error {
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 
 	m := &model{Dir: dir, CSVFilename: csvFilename, Version: TheVersion}
+	if globalModel != nil {
+		m.UseLinuxSep = globalModel.UseLinuxSep
+	}
 
 	// Loading images from folder
 	images, err := bulk.LoadImages(dir)
@@ -267,6 +271,14 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 			globalModel.Images[img.ID].Rating = rating[0]
 		}
 	}
+	// UseLinuxSep
+	_, ok := r.PostForm["useLinuxSep"]
+	if ok {
+		globalModel.UseLinuxSep = true
+	} else {
+		globalModel.UseLinuxSep = false
+	}
+	// scroll
 	scroll := r.PostForm["scroll"][0]
 
 	if err := saveToCSVFile(globalModel); err != nil {
@@ -290,7 +302,7 @@ func saveToCSVFile(m *model) error {
 		}
 	}()
 
-	if err := bulk.Save(f, m.Images, m.Dir, m.Prefix); err != nil {
+	if err := bulk.Save(f, m.Images, m.Dir, m.Prefix, m.UseLinuxSep); err != nil {
 		return err
 	}
 	return err

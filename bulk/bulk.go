@@ -192,9 +192,9 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 
 // Save will write the image metadata to an open for writing file. It will
 // keep the base of the dir path and replace the prefix with the provided one.
-func Save(file io.Writer, images []Image, dir, prefix string) error {
+func Save(file io.Writer, images []Image, dir, prefix string, useLinuxSep bool) error {
 	w := csv.NewWriter(file)
-	w.WriteAll(toRecords(images, dir, prefix))
+	w.WriteAll(toRecords(images, dir, prefix, useLinuxSep))
 
 	if err := w.Error(); err != nil {
 		return fmt.Errorf("error writing csv: %v", err)
@@ -202,18 +202,22 @@ func Save(file io.Writer, images []Image, dir, prefix string) error {
 	return nil
 }
 
-func toRecords(images []Image, dir, prefix string) [][]string {
+func toRecords(images []Image, dir, prefix string, useLinuxSep bool) [][]string {
 	var records [][]string
 	for _, img := range images {
-		record := toRecord(img, dir, prefix)
+		record := toRecord(img, dir, prefix, useLinuxSep)
 		records = append(records, record)
 	}
 	return records
 }
 
-func toRecord(img Image, dir, prefix string) []string {
+func toRecord(img Image, dir, prefix string, useLinuxSep bool) []string {
 	var record []string
-	record = append(record, filepath.Join(prefix, filepath.Base(dir), img.Name))
+	p := filepath.Join(prefix, filepath.Base(dir), img.Name)
+	if useLinuxSep {
+		p = strings.Replace(p, "\\", "/", -1)
+	}
+	record = append(record, p)
 	record = append(record, strings.Join(img.Tags, " "))
 	record = append(record, img.Source)
 	record = append(record, img.Rating)
