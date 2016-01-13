@@ -97,8 +97,8 @@ func run() error {
 
 	// If CSV File does not exist, we create it.
 	csvFile := filepath.Join(*directory, *csvFilename)
-	if _, err := os.Stat(csvFile); os.IsNotExist(err) {
-		if err := createFile(csvFile); err != nil {
+	if _, err = os.Stat(csvFile); os.IsNotExist(err) {
+		if err = createFile(csvFile); err != nil {
 			return err
 		}
 	}
