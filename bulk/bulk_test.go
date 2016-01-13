@@ -72,9 +72,24 @@ var currentPrefixTests = []struct {
 	out    string
 	oerr   error
 }{
-	{"/local/path/dir", ",,,,", "/", nil},
-	{"/local/path/dir", "/server/path/dir,,,,", "/server/path", nil},
-	{"/local/path/dir", "", "", nil},
+	{
+		filepath.Join("/", "local", "path", "dir"),
+		",,,,",
+		filepath.Join("/"),
+		nil,
+	},
+	{
+		filepath.Join("/", "local", "path", "dir"),
+		filepath.Join("/", "server", "path", "dir") + ",,,,",
+		filepath.Join("/", "server", "path"),
+		nil,
+	},
+	{
+		filepath.Join("/", "local", "path", "dir"),
+		"",
+		"",
+		nil,
+	},
 }
 
 func TestCurrentPrefix(t *testing.T) {
@@ -259,18 +274,18 @@ var saveTests = []struct {
 }{
 	{
 		[]bulk.Image{{ID: 0, Name: "img1", Source: "source1", Rating: "s"}},
-		"/local/path/dir",
-		"/server/path",
-		"/server/path/dir/img1,,source1,s,\n",
+		filepath.Join("/", "local", "path", "dir"),
+		filepath.Join("/", "server", "path"),
+		filepath.Join("/", "server", "path", "dir", "img1") + ",,source1,s,\n",
 	},
 	{
 		[]bulk.Image{
 			{ID: 0, Name: "img1", Source: "source1", Rating: "s"},
 			{ID: 1, Name: "img2", Source: "source2", Rating: "q"},
 		},
-		"/local/path/dir",
-		"/server/path",
-		"/server/path/dir/img1,,source1,s,\n/server/path/dir/img2,,source2,q,\n",
+		filepath.Join("/", "local", "path", "dir"),
+		filepath.Join("/", "server", "path"),
+		filepath.Join("/", "server", "path", "dir", "img1") + ",,source1,s,\n" + filepath.Join("/", "server", "path", "dir", "img2") + ",,source2,q,\n",
 	},
 }
 
