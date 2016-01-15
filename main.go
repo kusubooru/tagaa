@@ -37,7 +37,6 @@ var fns = template.FuncMap{
 var (
 	directory   = flag.String("dir", ".", "the directory that contains the images")
 	csvFilename = flag.String("csv", "bulk.csv", "the name of the CSV file")
-	pathPrefix  = flag.String("prefix", "", "it will replace the path before the dir and the image name")
 	port        = flag.String("port", "8080", "server port")
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
 	version     = flag.Bool("v", false, "print program version")
@@ -131,10 +130,6 @@ func run() error {
 		return err
 	}
 	globalModel = m
-
-	if *pathPrefix != "" {
-		globalModel.Prefix = *pathPrefix
-	}
 
 	http.Handle("/", http.HandlerFunc(indexHandler))
 	http.Handle("/load", http.HandlerFunc(loadHandler))
