@@ -20,6 +20,7 @@ import (
 )
 
 //go:generate go run generate/templates.go
+//go:generate go run generate/swf.go
 
 const theVersion = "1.0.0"
 
@@ -343,8 +344,17 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("no image found with ID: %v", id), http.StatusNotFound)
 		return
 	}
-	p := filepath.Join(*directory, img.Name)
+	// In case of image name that ends with '.swf', we serve embedded image
+	// bytes from swf.go as it's not trivial to display a .swf file.
+	if strings.HasSuffix(img.Name, ".swf") {
+		_, err = w.Write(swfImageBytes)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
 
+	p := filepath.Join(*directory, img.Name)
 	f, err := os.Open(p)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not open image: %v", err), http.StatusInternalServerError)
