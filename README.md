@@ -18,11 +18,22 @@ the images to Shimmie2.
 # Usage
 * Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your system and extract.
 * Place the executable into a folder with images and launch.
-* Alternatively, you can launch the executable from the command line:
-```shell
+
+## Command Line Usage
+```sh-session
+	$ ./local-tagger
+```
+With the default options, local-tagger will:
+1. Search for images in the current directory.
+2. Try to load ./bulk.csv and if it doesn't exist it will create it.
+3. Start a new server at http://localhost:8080 and then launch a browser window
+   to that address.
+
+```sh-session
 	$ ./local-tagger -dir ~/myfolder -csv mybulk.csv -port 8888
 ```
-With the above options, local-tagger will search for images under ~/myfolder,
-try to load ~/myfolder/mybulk.csv and if it doesn't exist it will create it.
-Finally it will start a new server at http://localhost:8888 and then launch a
-browser window to that address.
+With the above options, local-tagger will:
+1. Search for images under ~/myfolder.
+2. Try to load ~/myfolder/mybulk.csv and if it doesn't exist it will create it.
+3. Start a new server at http://localhost:8888 and then launch a browser window
+   to that address.
