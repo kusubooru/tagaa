@@ -15,11 +15,11 @@ The folder containing the CSV file and the images can then be manually
 uploaded to the server and used by the 'Bulk Add CSV' extension to bulk add
 the images to Shimmie2.
 
-# Usage
+## Usage
 * Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your system and extract.
 * Place the executable into a folder with images and launch.
 
-## Command Line Usage
+### Command Line Usage
 ```sh-session
 	$ ./local-tagger
 ```
