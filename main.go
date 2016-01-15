@@ -1,3 +1,4 @@
+// User interface for the 'Bulk Add CSV' extension of Shimmie2.
 package main
 
 import (
