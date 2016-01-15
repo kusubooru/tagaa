@@ -16,7 +16,7 @@ uploaded to the server and used by the 'Bulk Add CSV' extension to bulk add
 the images to Shimmie2.
 
 ## Usage
-* Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your platform and extract.
+* Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your platform.
 * Place the executable into a folder with images and launch.
 * If the browser window does not open automatically then visit http://localhost:8080
 * Tag your images.
