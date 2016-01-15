@@ -23,7 +23,7 @@ the images to Shimmie2.
   your server and then click 'Save to CSV'.
 
 ### Screenshot
-![Usage image](doc/usage.jpg)
+![Usage image](doc/usage.png)
 
 
 ### Command Line Options
