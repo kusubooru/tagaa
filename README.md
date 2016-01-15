@@ -16,11 +16,11 @@ uploaded to the server and used by the 'Bulk Add CSV' extension to bulk add
 the images to Shimmie2.
 
 # Usage
-* Download the latest [release](releases) for your system and extract.
+* Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your system and extract.
 * Place the executable into a folder with images and launch.
 * Alternatively, you can launch the executable from the command line:
-```ShellSession
-	$./local-tagger -dir ~/myfolder -csv mybulk.csv -port 8888
+```shell
+	$ ./local-tagger -dir ~/myfolder -csv mybulk.csv -port 8888
 ```
 With the above options, local-tagger will search for images under ~/myfolder,
 try to load ~/myfolder/mybulk.csv and if it doesn't exist it will create it.
