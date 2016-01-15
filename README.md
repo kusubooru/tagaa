@@ -24,6 +24,7 @@ the images to Shimmie2.
 	$ ./local-tagger
 ```
 With the default options, local-tagger will:
+
 1. Search for images in the current directory.
 2. Try to load ./bulk.csv and if it doesn't exist it will create it.
 3. Start a new server at http://localhost:8080 and then launch a browser window
@@ -33,6 +34,7 @@ With the default options, local-tagger will:
 	$ ./local-tagger -dir ~/myfolder -csv mybulk.csv -port 8888
 ```
 With the above options, local-tagger will:
+
 1. Search for images under ~/myfolder.
 2. Try to load ~/myfolder/mybulk.csv and if it doesn't exist it will create it.
 3. Start a new server at http://localhost:8888 and then launch a browser window
