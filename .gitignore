@@ -1,4 +1,6 @@
 local-tagger
 !local-tagger/
 bulk*.csv
+*.out
+*.exe
 go-gopher3.png
