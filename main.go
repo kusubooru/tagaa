@@ -36,16 +36,38 @@ var fns = template.FuncMap{
 var (
 	directory   = flag.String("dir", ".", "the directory that contains the images")
 	csvFilename = flag.String("csv", "bulk.csv", "the name of the CSV file")
-	pathPrefix  = flag.String("prefix", "", "the path that should be prefixed before the directory and the image name on the CSV file")
+	pathPrefix  = flag.String("prefix", "", "it will replace the path before the dir and the image name")
 	port        = flag.String("port", "8080", "server port")
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
-	version     = flag.Bool("version", false, "print program version")
+	version     = flag.Bool("v", false, "print program version")
 )
 
+const description = `Usage: local-tagger [options]
+
+  User interface for the 'Bulk Add CSV' extension of Shimmie2.
+
+  local-tagger will launch a web interface in a new browser window, which
+  allows to add tags, source and rating on each image that is contained in the
+  current directory (or the one specified by the -dir option). Subfolders are
+  ignored. Supported types: "gif", "jpeg", "jpg", "png", "swf"
+
+  The web interface allows to save the image metadata in a CSV file as expected
+  by the 'Bulk Add CSV' Shimmie2 extension. If a CSV file with the name
+  'bulk.csv' (or a name specified by the -csv option) is found, it will be
+  loaded automatically on start up.
+
+  The folder containing the CSV file and the images can then be manually
+  uploaded to the server and used by the 'Bulk Add CSV' extension to bulk add
+  the images to Shimmie2.
+
+Options:
+
+`
+
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: bulk-add-csv-ui [Options...]\n")
-	fmt.Fprintf(os.Stderr, "Options:\n")
+	fmt.Fprintf(os.Stderr, description)
 	flag.PrintDefaults()
+	fmt.Fprintf(os.Stderr, "\n")
 }
 
 type model struct {
