@@ -18,8 +18,12 @@ the images to Shimmie2.
 ## Usage
 * Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your system and extract.
 * Place the executable into a folder with images and launch.
+* Tag your images.
+![Usage image](doc/usage.jpg)
+* Make sure to fill the 'server path prefix' input with the upload location on
+  your server and then click 'Save to CSV'.
 
-### Command Line Usage
+### Command Line Options
 ```sh-session
 	$ ./local-tagger
 ```
