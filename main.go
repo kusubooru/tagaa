@@ -147,11 +147,7 @@ func run() error {
 		}
 	}()
 
-	if err := http.ListenAndServe(":"+*port, nil); err != nil {
-		return err
-	}
-
-	return nil
+	return http.ListenAndServe(":"+*port, nil)
 }
 
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
