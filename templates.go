@@ -85,7 +85,7 @@ h1 small {
 	<br>
 	<label for="directory"><b>Local Directory</b></label>
 	<br>
-	<input id="directory" type="text" name="prefix" value="{{ .Dir }}" disabled size="{{ $inputSize }}">
+	<input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
 	<br>
 	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace local directory prefix)</label>
 	<br>

@@ -72,7 +72,7 @@ func usage() {
 type model struct {
 	Err         error
 	Prefix      string
-	Dir         string
+	WorkingDir  string
 	CSVFilename string
 	Images      []bulk.Image
 	Version     string
@@ -152,7 +152,7 @@ func run() error {
 
 func loadFromCSVFile(dir, csvFilename string) (*model, error) {
 
-	m := &model{Dir: dir, CSVFilename: csvFilename, Version: theVersion}
+	m := &model{WorkingDir: dir, CSVFilename: csvFilename, Version: theVersion}
 	if globalModel != nil {
 		m.UseLinuxSep = globalModel.UseLinuxSep
 	}
@@ -230,7 +230,7 @@ func addFromMultipartFile(m *model, file multipart.File) error {
 	if _, err = file.Seek(0, 0); err != nil {
 		return fmt.Errorf("could not seek multipart file: %v", err)
 	}
-	prefix, err := bulk.CurrentPrefix(m.Dir, file)
+	prefix, err := bulk.CurrentPrefix(m.WorkingDir, file)
 	if err != nil {
 		return fmt.Errorf("could not read current prefix from multipart file: %v", err)
 	}
@@ -245,7 +245,7 @@ func okHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	m, err := loadFromCSVFile(globalModel.Dir, globalModel.CSVFilename)
+	m, err := loadFromCSVFile(globalModel.WorkingDir, globalModel.CSVFilename)
 	if err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)
 	} else {
@@ -305,7 +305,7 @@ func updateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveToCSVFile(m *model) error {
-	csvFilepath := filepath.Join(m.Dir, m.CSVFilename)
+	csvFilepath := filepath.Join(m.WorkingDir, m.CSVFilename)
 	f, err := os.Create(csvFilepath)
 	if err != nil {
 		return err
@@ -316,10 +316,7 @@ func saveToCSVFile(m *model) error {
 		}
 	}()
 
-	if err := bulk.Save(f, m.Images, m.Dir, m.Prefix, m.UseLinuxSep); err != nil {
-		return err
-	}
-	return err
+	return bulk.Save(f, m.Images, m.WorkingDir, m.Prefix, m.UseLinuxSep)
 }
 
 func serveImage(w http.ResponseWriter, r *http.Request) {
