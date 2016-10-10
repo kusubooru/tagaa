@@ -71,6 +71,7 @@ func usage() {
 
 type model struct {
 	Err         error
+	Success     string
 	Prefix      string
 	WorkingDir  string
 	CSVFilename string

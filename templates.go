@@ -28,11 +28,17 @@ html {
 input {
 	margin-bottom: 0.6em;
 }
-#err {
-	background: #f2dede;
+.block {
 	display: block;
 	padding: 15px;
 	margin-bottom: 10px;
+}
+.block-danger {
+	background: #f2dede;
+	color: #333;
+}
+.block-success {
+	background: #dff0d8;
 	color: #333;
 }
 h1 small {
@@ -66,7 +72,7 @@ h1 small {
 {{ $inputSize := 60 }}
 {{ $taRows := 6 }}
 {{ if .Err }}
-<div id="err">
+<div class="block block-danger">
 	{{ .Err }}
 </div>
 {{ end }}
