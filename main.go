@@ -241,7 +241,9 @@ func addFromMultipartFile(m *model, file multipart.File) error {
 }
 
 func okHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ok"))
+	if _, err := w.Write([]byte("ok")); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
