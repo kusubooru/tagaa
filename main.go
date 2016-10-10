@@ -207,7 +207,7 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	if err := addFromMultipartFile(globalModel, f); err != nil {
+	if err = addFromMultipartFile(globalModel, f); err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not load image metadata from multipart CSV File: %v", err)
 		render(w, indexTmpl, globalModel)
 		return
