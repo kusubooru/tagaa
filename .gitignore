@@ -1,4 +1,5 @@
 local-tagger
+local-tagger*
 !local-tagger/
 bulk*.csv
 *.out
