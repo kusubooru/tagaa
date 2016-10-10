@@ -20,11 +20,11 @@
 	<input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
 	<input id="saveCSVSubmit" type="submit" value="Save to CSV">
 	<br>
-	<label for="directory"><b>Local Directory</b></label>
+	<label for="directory"><b>Working Directory</b></label>
 	<br>
 	<input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
 	<br>
-	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace local directory prefix)</label>
+	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
 	<br>
 	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
 	<br>
