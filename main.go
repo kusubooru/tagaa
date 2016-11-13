@@ -41,6 +41,7 @@ var (
 	port        = flag.String("port", "8080", "server port")
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
 	version     = flag.Bool("v", false, "print program version")
+	uploadURL   = flag.String("uploadurl", "http://localhost:8081/upload", "URL to upload zip file")
 )
 
 const description = `
@@ -136,6 +137,7 @@ func run() error {
 	http.Handle("/update", http.HandlerFunc(updateHandler))
 	http.Handle("/ok/", http.HandlerFunc(okHandler))
 	http.Handle("/img/", http.HandlerFunc(serveImage))
+	http.Handle("/upload", http.HandlerFunc(uploadHandler))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
 	go func() {

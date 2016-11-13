@@ -9,6 +9,8 @@ var (
 
 	indexTmpl = template.Must(template.Must(layoutTmpl.Clone()).Parse(indexTemplate))
 
+	uploadTmpl = template.Must(template.Must(layoutTmpl.Clone()).Parse(uploadTemplate))
+
 	layoutTemplate = `
 {{ define "layout" }}
 <!DOCTYPE html>
@@ -68,6 +70,10 @@ h1 small {
 
 	indexTemplate = `
 {{ define "content" }}
+
+<nav>
+  <a href="/upload">Upload</a>
+</nav>
 
 {{ $inputSize := 60 }}
 {{ $taRows := 6 }}
@@ -153,6 +159,103 @@ function setScroll(e) {
 	var scroll = e.getAttribute("data-scroll");
 	document.getElementById("scroll").value = scroll;
 }
+</script>
+{{ end }}
+`
+	uploadTemplate = `
+{{ define "style" }}
+<style>
+.thumbnail {
+	width: 50px;
+	height: 30px;
+	display: inline-block;
+}
+
+.thumbnail img {
+	width: 100%;
+	height: auto;
+}
+
+.upload-table {
+	width: 100%;
+}
+
+.upload-table textarea {
+	width: 95%;
+}
+</style>
+{{end}}
+
+{{ define "content" }}
+
+<nav>
+  <a href="/">Back</a>
+</nav>
+
+{{ if .Err }}
+<div class="block block-danger">
+	{{ .Err }}
+</div>
+{{ else if .Success }}
+<div class="block block-success">
+	{{ .Success }}
+</div>
+{{ end }}
+
+
+<form action="/upload" method="POST" enctype="multipart/form-data">
+	<table class="upload-table">
+		<thead>
+			<tr>
+				<th></th>
+				<th>Name</th>
+				<th>Tags</th>
+				<th>Source</th>
+				<th>Rating</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{ range .Images }}
+			<tr>
+				<td>
+					<div class="thumbnail">
+						<a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}" width=150 height=100></a>
+					</div>
+				</td>
+				<td width="10%">
+					{{ .Name }}
+				</td>
+				<td width="65%">
+					<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="20" rows="2" readonly>{{ join .Tags " " }}</textarea>
+				</td>
+				<td width="25%">
+					{{ .Source }}
+				</td>
+				<td>
+					{{ if eq .Rating "s" }} Safe
+					{{ else if eq .Rating "q" }} Questionable
+					{{ else if eq .Rating "e" }} Explicit
+					{{ else }} Unknown
+					{{ end }}
+				</td>
+			</tr>
+		{{ end }}
+		</tbody>
+	</table>
+
+	<span>The images above are going to be:</span>
+	<ul>
+		<li>Compressed to a .zip archive</li>
+		<li>Uploaded to server Kusubooru.com</li>
+		<li>Manually reviewed before posted</li>
+	</ul>
+	<p>Please make sure that all images have adequate tags, a source and a rating before uploading.</p>
+
+	<input type="submit" value="Upload">
+</form>
+{{ end }}
+{{ define "script" }}
+<script>
 </script>
 {{ end }}
 `
