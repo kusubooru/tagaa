@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -23,7 +24,10 @@ import (
 //go:generate go run generate/templates.go
 //go:generate go run generate/swf.go
 
-const theVersion = "1.0.0"
+var (
+	theVersion = "devel"
+	versionRx  = regexp.MustCompile(`\d.*`)
+)
 
 var fns = template.FuncMap{
 	"last": func(s []string) string {
@@ -33,6 +37,13 @@ var fns = template.FuncMap{
 		return s[len(s)-1]
 	},
 	"join": strings.Join,
+	"printv": func(version string) string {
+		// If version starts with a digit, add 'v'.
+		if versionRx.Match([]byte(version)) {
+			version = "v" + version
+		}
+		return version
+	},
 }
 
 var (
@@ -108,7 +119,7 @@ func run() error {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("local-tagger%v\n", theVersion)
+		fmt.Printf("%s %s (runtime: %s)\n", os.Args[0], theVersion, runtime.Version())
 		return nil
 	}
 
