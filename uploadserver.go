@@ -22,7 +22,7 @@ const (
 
 var (
 	httpAddr  = flag.String("http", ":8081", "http address the server listens")
-	uploadDir = flag.String("upload-dir", "ltuploads", "http address the server listens")
+	uploadDir = flag.String("updir", "tagaa_uploads", "upload directory")
 )
 
 func main() {
