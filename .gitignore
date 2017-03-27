@@ -1,6 +1,6 @@
-local-tagger
-local-tagger*
-!local-tagger/
+tagaa
+tagaa*
+!tagaa/
 bulk*.csv
 *.out
 *.exe

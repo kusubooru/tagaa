@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const commandName = "local-tagger"
+const commandName = "tagaa"
 
 type platform struct {
 	os   string

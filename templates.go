@@ -19,7 +19,7 @@ var (
 <head>
 <meta charset="utf-8">
 
-<title>local-tagger {{printv .Version}}</title>
+<title>Tagaa {{printv .Version}}</title>
 <meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
 <meta name="author" content="kusubooru">
 
@@ -59,7 +59,7 @@ nav {
 </head>
 
 <body>
-<h1>local-tagger <small>{{printv .Version}}</small></h1>
+<h1>Tagaa <small>{{printv .Version}}</small></h1>
 {{ template "content" . }}
 <script></script>
 {{ template "script" . }}

@@ -1,7 +1,7 @@
-# local-tagger
+# Tagaa - (タガー)
 User interface for the 'Bulk Add CSV' extension of Shimmie2.
 
-local-tagger will launch a web interface in a new browser window, which
+Tagaa will launch a web interface in a new browser window, which
 allows to add tags, source and rating on each image that is contained in the
 current directory (or the one specified by the -dir option). Subfolders are
 ignored. Supported types: "gif", "jpeg", "jpg", "png", "swf"
@@ -16,7 +16,7 @@ uploaded to the server and used by the 'Bulk Add CSV' extension to bulk add
 the images to Shimmie2.
 
 ## Usage
-* Download the latest [release](https://github.com/kusubooru/local-tagger/releases) for your platform.
+* Download the latest [release](https://github.com/kusubooru/tagaa/releases) for your platform.
 * Place the executable into a folder with images and launch.
 * If the browser window does not open automatically then visit http://localhost:8080
 * Tag your images.
@@ -30,9 +30,9 @@ the images to Shimmie2.
 
 ### Command Line Options
 ```sh-session
-	$ ./local-tagger
+	$ ./tagaa
 ```
-With the default options, local-tagger will:
+With the default options, Tagaa will:
 
 1. Search for images in the current directory.
 2. Try to load ./bulk.csv and if it doesn't exist it will create it.
@@ -40,9 +40,9 @@ With the default options, local-tagger will:
    to that address.
 
 ```sh-session
-	$ ./local-tagger -dir ~/myfolder -csv mybulk.csv -port 8888
+	$ ./tagaa -dir ~/myfolder -csv mybulk.csv -port 8888
 ```
-With the above options, local-tagger will:
+With the above options, Tagaa will:
 
 1. Search for images under ~/myfolder.
 2. Try to load ~/myfolder/mybulk.csv and if it doesn't exist it will create it.

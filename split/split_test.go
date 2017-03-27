@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kusubooru/local-tagger/split"
+	"github.com/kusubooru/tagaa/split"
 )
 
 var bytesTests = []struct {

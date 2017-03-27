@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kusubooru/local-tagger/bulk"
+	"github.com/kusubooru/tagaa/bulk"
 )
 
 //go:generate go run generate/templates.go

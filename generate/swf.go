@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"text/template"
 
-	"github.com/kusubooru/local-tagger/split"
+	"github.com/kusubooru/tagaa/split"
 )
 
 const (
