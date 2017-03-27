@@ -1,6 +1,7 @@
 tagaa
 tagaa*
 !tagaa/
+tagaa_uploads
 bulk*.csv
 *.out
 *.exe
