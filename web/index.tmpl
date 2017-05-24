@@ -1,92 +1,89 @@
 {{ define "content" }}
+  <nav>
+    <a href="/upload">Upload</a>
+  </nav>
 
-<nav>
-  <a href="/upload">Upload</a>
-</nav>
+  {{ $inputSize := 60 }}
+  {{ $taRows := 6 }}
 
-{{ $inputSize := 60 }}
-{{ $taRows := 6 }}
-{{ if .Err }}
-<div class="block block-danger">
-	{{ .Err }}
-</div>
-{{ end }}
-<form action="/load" method="POST" enctype="multipart/form-data">
-	<label for="loadCSVFile"><b>Load CSV File</b></label>
-	<br>
-	<input id="loadCSVFile" name="csvFilename" type="file" accept=".csv" required>
-	<input type="submit" value="Load from CSV">
-	<br>
-</form>
-<form action="/update" method="POST">
-	<label for="csvFilenameInput"><b>CSV Filename</b></label>
-	<br>
-	<input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
-	<input id="saveCSVSubmit" type="submit" value="Save to CSV">
-	<br>
-	<label for="directory"><b>Working Directory</b></label>
-	<br>
-	<input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
-	<br>
-	<label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
-	<br>
-	<input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
-	<br>
-	<label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
-	<br>
-	<input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
-	(Check, if working on a windows machine and want to upload to a Linux machine)
-	<input id="scroll" type="hidden" name="scroll" value="">
+  {{ if .Err }}
+    <div class="block block-danger">
+      {{ .Err }}
+    </div>
+  {{ end }}
+  <form action="/load" method="POST" enctype="multipart/form-data">
+    <label for="loadCSVFile"><b>Load CSV File</b></label>
+    <br>
+    <input id="loadCSVFile" name="csvFilename" type="file" accept=".csv" required>
+    <input type="submit" value="Load from CSV">
+    <br>
+  </form>
+  <form action="/update" method="POST">
+    <label for="csvFilenameInput"><b>CSV Filename</b></label>
+    <br>
+    <input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
+    <input id="saveCSVSubmit" type="submit" value="Save to CSV">
+    <br>
+    <label for="directory"><b>Working Directory</b></label>
+    <br>
+    <input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
+    <br>
+    <label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
+    <br>
+    <input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
+    <br>
+    <label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
+    <br>
+    <input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
+    (Check, if working on a windows machine and want to upload to a Linux machine)
+    <input id="scroll" type="hidden" name="scroll" value="">
 
-	<section>
-		{{ if .Images }}
-		<h2>Images</h2>
-		{{ else }}
-		<h2>No Images found in local directory</h2>
-		Add some and then refresh.
-		{{ end }}
+    <section>
+      {{ if .Images }}
+        <h2>Images</h2>
+      {{ else }}
+        <h2>No Images found in local directory</h2>
+        Add some and then refresh.
+      {{ end }}
 
-		{{ range .Images }}
-
-		<article>
-
-			<fieldset>
-				<a id="tags{{ .ID }}"></a>
-				<legend>{{ .Name }}</legend>
-				<label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
-				<br>
-				<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
-				<br>
-				<label for="sourceInput{{ .ID }}"><b>Source</b></label>
-				<br>
-				<input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="{{ $inputSize }}">
-				<br>
-				<label><b>Rating</b></label>
-				<br>
-				<input id="sRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="s" {{ if eq .Rating "s" }}checked{{ end }}>
-				<label for="sRadio{{ .ID }}">Safe</label>
-				<input id="qRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="q" {{ if eq .Rating "q" }}checked{{ end }}>
-				<label for="qRadio{{ .ID }}">Questionable</label>
-				<input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
-				<label for="eRadio{{ .ID }}">Explicit</label>
-				<br>
-				<input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
-				<a id="img{{ .ID }}"></a>
-				<h3>{{ .Name }}</h3>
-				<a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
-			</fieldset>
-		</article>
-
-		<br>
-		{{ end }}
-	</section>
-</form>
+      {{ range .Images }}
+        <article>
+          <fieldset>
+            <a id="tags{{ .ID }}"></a>
+            <legend>{{ .Name }}</legend>
+            <label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
+            <br>
+            <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
+            <br>
+            <label for="sourceInput{{ .ID }}"><b>Source</b></label>
+            <br>
+            <input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="{{ $inputSize }}">
+            <br>
+            <label><b>Rating</b></label>
+            <br>
+            <input id="sRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="s" {{ if eq .Rating "s" }}checked{{ end }}>
+            <label for="sRadio{{ .ID }}">Safe</label>
+            <input id="qRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="q" {{ if eq .Rating "q" }}checked{{ end }}>
+            <label for="qRadio{{ .ID }}">Questionable</label>
+            <input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
+            <label for="eRadio{{ .ID }}">Explicit</label>
+            <br>
+            <input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
+            <a id="img{{ .ID }}"></a>
+            <h3>{{ .Name }}</h3>
+            <a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
+          </fieldset>
+        </article>
+        <br>
+      {{ end }}
+    </section>
+  </form>
 {{ end }}
 {{ define "script" }}
-<script>
-function setScroll(e) {
-	var scroll = e.getAttribute("data-scroll");
-	document.getElementById("scroll").value = scroll;
-}
-</script>
+  <script>
+    function setScroll(e) {
+      var scroll = e.getAttribute("data-scroll");
+      document.getElementById("scroll").value = scroll;
+    }
+  </script>
 {{ end }}
