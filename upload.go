@@ -10,10 +10,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
+
+	"github.com/kusubooru/tklid"
 )
 
 const (
-	uploadFormFileName = "uploadfile"
+	uploadFormFileName    = "uploadfile"
+	randomIDCookieName    = "tagaa-randomid"
+	randomIDCookieExpires = time.Second * 60 * 60 * 24 * 365 // 1 year
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,10 +40,29 @@ func serveUpload(w http.ResponseWriter, r *http.Request) {
 	} else {
 		globalModel = m
 	}
+
+	cookie, err := r.Cookie(randomIDCookieName)
+	if err == http.ErrNoCookie || cookie == nil || !tklid.Validate(cookie.Value) {
+		cookie = createRandomIDCookie(w)
+	}
+
+	globalModel.RandomID = cookie.Value
 	render(w, uploadTmpl, globalModel)
 }
 
+func createRandomIDCookie(w http.ResponseWriter) *http.Cookie {
+	cookie := &http.Cookie{
+		Name:     randomIDCookieName,
+		Value:    tklid.New(time.Now().UnixNano()),
+		HttpOnly: true,
+		Expires:  time.Now().Add(randomIDCookieExpires),
+	}
+	http.SetCookie(w, cookie)
+	return cookie
+}
+
 func handleUpload(w http.ResponseWriter, r *http.Request) {
+
 	m, err := loadFromCSVFile(globalModel.WorkingDir, globalModel.CSVFilename)
 	if err != nil {
 		globalModel.Err = fmt.Errorf("Error: could not load from CSV File: %v", err)

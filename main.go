@@ -90,6 +90,7 @@ type model struct {
 	Images      []bulk.Image
 	Version     string
 	UseLinuxSep bool
+	RandomID    string
 }
 
 var globalModel *model
