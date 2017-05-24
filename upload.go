@@ -87,13 +87,17 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := postFile(zipFilename, *uploadURL, uploadFormFileName); err != nil {
+	username := r.PostFormValue("username")
+	password := r.PostFormValue("password")
+
+	remain, err := postFile(zipFilename, *uploadURL, uploadFormFileName, username, password)
+	if err != nil {
 		//http.Error(w, fmt.Sprintf("Failed to upload zip file: %v", err), http.StatusInternalServerError)
 		globalModel.Err = fmt.Errorf("Failed to upload zip file: %v", err)
 		render(w, uploadTmpl, globalModel)
 		return
 	}
-	globalModel.Success = "Upload was successful!"
+	globalModel.Success = fmt.Sprintf("Upload was successful! (%v MB remain)", remain/1024/1024)
 	render(w, uploadTmpl, globalModel)
 }
 
@@ -170,37 +174,53 @@ func zipFiles(uploadFiles []*uploadFile, zipFilename, dirName string) error {
 	return err
 }
 
-func postFile(filename, targetURL, formName string) error {
+func postFile(filename, targetURL, formName, username, password string) (int64, error) {
 	buf := &bytes.Buffer{}
 	mw := multipart.NewWriter(buf)
 
 	// this step is very important
 	formFile, err := mw.CreateFormFile(formName, filename)
 	if err != nil {
-		return fmt.Errorf("error creating form file: %v", err)
+		return 0, fmt.Errorf("error creating form file: %v", err)
 	}
 
 	f, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("error opening upload file: %v", err)
+		return 0, fmt.Errorf("error opening upload file: %v", err)
 	}
 
 	_, err = io.Copy(formFile, f)
 	if err != nil {
-		return fmt.Errorf("error copying to form file: %v", err)
+		return 0, fmt.Errorf("error copying to form file: %v", err)
+	}
+
+	// Add the other fields
+	// username
+	if formFile, err = mw.CreateFormField("username"); err != nil {
+		return 0, fmt.Errorf("error creating form field username: %v", err)
+	}
+	if _, err = formFile.Write([]byte(username)); err != nil {
+		return 0, fmt.Errorf("error writing value for form field username: %v", err)
+	}
+	// password
+	if formFile, err = mw.CreateFormField("password"); err != nil {
+		return 0, fmt.Errorf("error creating form field password: %v", err)
+	}
+	if _, err = formFile.Write([]byte(password)); err != nil {
+		return 0, fmt.Errorf("error writing value for form field password: %v", err)
+	}
+
+	if err = mw.Close(); err != nil {
+		return 0, fmt.Errorf("error closing multipart writer: %v", err)
 	}
 
 	contentType := mw.FormDataContentType()
-	if err = mw.Close(); err != nil {
-		return fmt.Errorf("error closing multipart writer: %v", err)
-	}
-
 	resp, err := http.Post(targetURL, contentType, buf)
 	if err != nil {
 		if resp != nil {
-			return fmt.Errorf("%v %v: %d %v", resp.Request.Method, resp.Request.URL, resp.StatusCode, err)
+			return 0, fmt.Errorf("%v %v: %d %v", resp.Request.Method, resp.Request.URL, resp.StatusCode, err)
 		}
-		return err
+		return 0, err
 	}
 	defer func() {
 		if cerr := resp.Body.Close(); cerr == nil {
@@ -208,12 +228,23 @@ func postFile(filename, targetURL, formName string) error {
 		}
 	}()
 
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		data, rerr := ioutil.ReadAll(resp.Body)
-		if rerr != nil {
-			return fmt.Errorf("error reading response body: %v", rerr)
-		}
-		return fmt.Errorf("%v %v: %d %s", resp.Request.Method, resp.Request.URL, resp.StatusCode, string(data))
+	data, rerr := ioutil.ReadAll(resp.Body)
+	if rerr != nil {
+		return 0, fmt.Errorf("error reading response body: %v", rerr)
 	}
-	return err
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return 0, fmt.Errorf("%v %v: %d %s", resp.Request.Method, resp.Request.URL, resp.StatusCode, string(data))
+	}
+
+	var remain int64
+	body := string(data)
+	if resp.StatusCode == 200 {
+		rem, err := strconv.ParseInt(body, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("expected response body to be an integer, got: %v", body)
+		}
+		remain = rem
+	}
+	return remain, err
 }

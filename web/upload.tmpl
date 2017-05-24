@@ -1,95 +1,162 @@
 {{ define "style" }}
-<style>
-.thumbnail {
-	width: 50px;
-	height: 30px;
-	display: inline-block;
-}
+  <style>
+    .thumbnail {
+      width: 50px;
+      height: 30px;
+      display: inline-block;
+    }
+    .thumbnail img {
+      width: 100%;
+      height: auto;
+    }
+    .upload-table {
+      width: 100%;
+    }
+    .upload-table textarea {
+      width: 95%;
+    }
+    .upload-button {
+      display: inline-block;
+      padding: 0.5em;
+    }
 
-.thumbnail img {
-	width: 100%;
-	height: auto;
-}
-
-.upload-table {
-	width: 100%;
-}
-
-.upload-table textarea {
-	width: 95%;
-}
-</style>
+    .loader {
+      display: none;
+      border: 5px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 5px solid #006FFA;
+      border-right: 5px solid #006FFA;
+      width: 32px;
+      height: 32px;
+      -webkit-animation: spin 1s linear infinite;
+      animation: spin 1s linear infinite;
+      will-change: transform;
+    }
+    .loader-small {
+      width: 8px;
+      height: 8px;
+      border-width: 3px;
+    }
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 {{end}}
 
 {{ define "content" }}
+  <nav>
+    <a href="/">Back</a>
+  </nav>
 
-<nav>
-  <a href="/">Back</a>
-</nav>
+  {{ if .Err }}
+    <div class="block block-danger">
+      {{ .Err }}
+    </div>
+  {{ else if .Success }}
+    <div class="block block-success">
+     {{ .Success }}
+    </div>
+  {{ end }}
 
-{{ if .Err }}
-<div class="block block-danger">
-	{{ .Err }}
-</div>
-{{ else if .Success }}
-<div class="block block-success">
-	{{ .Success }}
-</div>
-{{ end }}
+  <form action="/upload" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+    <table class="upload-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Tags</th>
+          <th>Source</th>
+          <th>Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Images }}
+          <tr>
+            <td>
+              <div class="thumbnail">
+                <a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}" width=150 height=100></a>
+              </div>
+            </td>
+            <td width="10%">
+              {{ .Name }}
+            </td>
+            <td width="65%">
+              <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="20" rows="2" readonly>{{ join .Tags " " }}</textarea>
+            </td>
+            <td width="25%">
+              {{ .Source }}
+            </td>
+            <td>
+              {{ if eq .Rating "s" }} Safe
+              {{ else if eq .Rating "q" }} Questionable
+              {{ else if eq .Rating "e" }} Explicit
+              {{ else }} Unknown
+              {{ end }}
+            </td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
 
+    <span>The images above are going to be:</span>
+    <ul>
+      <li>Compressed to a .zip archive</li>
+      <li>Uploaded to server Kusubooru.com</li>
+      <li>Manually reviewed before posted</li>
+    </ul>
+    <p>Please make sure that all images have adequate tags, a source and a rating before uploading.</p>
 
-<form action="/upload" method="POST" enctype="multipart/form-data">
-	<table class="upload-table">
-		<thead>
-			<tr>
-				<th></th>
-				<th>Name</th>
-				<th>Tags</th>
-				<th>Source</th>
-				<th>Rating</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{ range .Images }}
-			<tr>
-				<td>
-					<div class="thumbnail">
-						<a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}" width=150 height=100></a>
-					</div>
-				</td>
-				<td width="10%">
-					{{ .Name }}
-				</td>
-				<td width="65%">
-					<textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="20" rows="2" readonly>{{ join .Tags " " }}</textarea>
-				</td>
-				<td width="25%">
-					{{ .Source }}
-				</td>
-				<td>
-					{{ if eq .Rating "s" }} Safe
-					{{ else if eq .Rating "q" }} Questionable
-					{{ else if eq .Rating "e" }} Explicit
-					{{ else }} Unknown
-					{{ end }}
-				</td>
-			</tr>
-		{{ end }}
-		</tbody>
-	</table>
+    <p>Use your Kusubooru account to upload:</p>
+    <label for="username">Username</label>
+    <input id="username" type="text" name="username" placeholder="Username" required>
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" placeholder="Password" required>
+    <button type="button" onclick="testCredentials()">Test</button>
+    <label id="result"></label>
+    <div id="testLoader" class="loader loader-small"></div>
 
-	<span>The images above are going to be:</span>
-	<ul>
-		<li>Compressed to a .zip archive</li>
-		<li>Uploaded to server Kusubooru.com</li>
-		<li>Manually reviewed before posted</li>
-	</ul>
-	<p>Please make sure that all images have adequate tags, a source and a rating before uploading.</p>
-
-	<input type="submit" value="Upload">
-</form>
+    <p><small>(Max file size for a single upload is 50MB and you may upload a total of 200MB per day.)</small></p>
+    <input id="uploadButton" class="upload-button" type="submit" value="Upload">
+    <div id="uploadLoader" class="loader"></div>
+  </form>
 {{ end }}
 {{ define "script" }}
-<script>
-</script>
+  <script>
+    function showLoader() {
+      var loader = document.getElementById("uploadLoader");
+      loader.style.display = "inline-block";
+      var button = document.getElementById("uploadButton");
+      button.style.display = "none";
+    }
+
+    function testCredentials() {
+      var loader = document.getElementById("testLoader");
+      loader.style.display = "inline-block";
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+      var resultLabel = document.getElementById("result");
+      resultLabel.innerHTML = "";
+      var xhr = new XMLHttpRequest();
+      var url = "https://kusubooru.com/suggest/login/test";
+      var params = "username="+username+"&password="+password;
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = function() {
+        loader.style.display = "none";
+        if(xhr.readyState == 4 && xhr.status == 200) {
+          resultLabel.innerHTML = "Ok!";
+	} else if(xhr.readyState == 4 && xhr.status != 200) {
+	  var reason = "";
+	  if (xhr.responseText) { reason = ": " + xhr.responseText }
+          resultLabel.innerHTML = "Failed" + reason;
+        }
+      }
+      xhr.send(params);
+    };
+  </script>
 {{ end }}
