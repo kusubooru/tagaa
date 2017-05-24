@@ -1,3 +1,10 @@
+{{ define "style" }}
+  <style>
+    #advanced {
+      display: none;
+    }
+  </style>
+{{ end }}
 {{ define "content" }}
   <nav>
     <a href="/upload">Upload</a>
@@ -16,27 +23,30 @@
     <br>
     <input id="loadCSVFile" name="csvFilename" type="file" accept=".csv" required>
     <input type="submit" value="Load from CSV">
+    <button id="toggleButton" type="button" onclick="toggleAdvanced()">Advanced +</button>
     <br>
   </form>
   <form action="/update" method="POST">
-    <label for="csvFilenameInput"><b>CSV Filename</b></label>
-    <br>
-    <input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
-    <input id="saveCSVSubmit" type="submit" value="Save to CSV">
-    <br>
-    <label for="directory"><b>Working Directory</b></label>
-    <br>
-    <input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
-    <br>
-    <label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
-    <br>
-    <input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
-    <br>
-    <label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
-    <br>
-    <input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
-    (Check, if working on a windows machine and want to upload to a Linux machine)
-    <input id="scroll" type="hidden" name="scroll" value="">
+    <div id="advanced">
+      <label for="csvFilenameInput"><b>CSV Filename</b></label>
+      <br>
+      <input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
+      <input id="saveCSVSubmit" type="submit" value="Save to CSV">
+      <br>
+      <label for="directory"><b>Working Directory</b></label>
+      <br>
+      <input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
+      <br>
+      <label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
+      <br>
+      <input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
+      <br>
+      <label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
+      <br>
+      <input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
+      (Check, if working on a windows machine and want to upload to a Linux machine)
+      <input id="scroll" type="hidden" name="scroll" value="">
+    </div>
 
     <section>
       {{ if .Images }}
@@ -84,6 +94,18 @@
     function setScroll(e) {
       var scroll = e.getAttribute("data-scroll");
       document.getElementById("scroll").value = scroll;
+    }
+    function toggleAdvanced() {
+      b = document.getElementById("toggleButton");
+      div = document.getElementById("advanced");
+      // Empty display reverts to CSS rule, in this case none.
+      if (div.style.display == '') {
+        div.style.display = 'block';
+	b.innerHTML = "Advanced -";
+      } else {
+        div.style.display = '';
+	b.innerHTML = "Advanced +";
+      }
     }
   </script>
 {{ end }}
