@@ -52,7 +52,7 @@ var (
 	port        = flag.String("port", "8080", "server port")
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
 	version     = flag.Bool("v", false, "print program version")
-	uploadURL   = flag.String("uploadurl", "http://localhost:8081/upload", "URL to upload zip file")
+	uploadURL   = flag.String("uploadurl", "https://kusubooru.com/suggest/upload", "URL to upload zip file")
 )
 
 const description = `
@@ -90,7 +90,6 @@ type model struct {
 	Images      []bulk.Image
 	Version     string
 	UseLinuxSep bool
-	RandomID    string
 }
 
 var globalModel *model
