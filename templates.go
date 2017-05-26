@@ -77,6 +77,9 @@ nav {
     #advanced {
       display: none;
     }
+    .image {
+      max-width: 100%;
+    }
   </style>
 {{ end }}
 {{ define "content" }}
@@ -155,7 +158,7 @@ nav {
             <input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
             <a id="img{{ .ID }}"></a>
             <h3>{{ .Name }}</h3>
-            <a href="#img{{ .ID }}"><img src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
+            <a href="#img{{ .ID }}"><img class="image" src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
           </fieldset>
         </article>
         <br>
