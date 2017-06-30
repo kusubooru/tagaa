@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kusubooru/local-tagger/bulk"
+	"github.com/kusubooru/tagaa/bulk"
 )
 
 var errInvalidFormat = errors.New("invalid csv file format")
@@ -88,6 +88,12 @@ var currentPrefixTests = []struct {
 		filepath.Join("/", "local", "path", "dir"),
 		"",
 		"",
+		nil,
+	},
+	{
+		filepath.Join("/", "local", "path", "dir"),
+		filepath.Join("/", "server", "path", "dir", "somepic.jpg") + ",,,,",
+		filepath.Join("/", "server", "path"),
 		nil,
 	},
 }
