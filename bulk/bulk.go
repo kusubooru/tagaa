@@ -162,7 +162,7 @@ func FindByID(image []Image, id int) *Image {
 // As an example if the provided dir path is '/localpath/pics' and the first line
 // has '/serverpath/pics/pic1' then the returned current prefix will be
 // '/serverpath'.
-func CurrentPrefix(dir string, file io.Reader) (string, error) {
+func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 	r := csv.NewReader(file)
 	record, err := r.Read()
 	if err == io.EOF {
@@ -173,7 +173,7 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 	}
 
 	serverDir := record[0]
-	folder := filepath.Base(dir)
+	folder := filepath.Base(workingDir)
 	sep := fmt.Sprintf("%c", filepath.Separator)
 	if !strings.Contains(serverDir, folder) {
 		return sep, nil
