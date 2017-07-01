@@ -68,7 +68,7 @@
             <br>
             <label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
             <br>
-            <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
+            <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" class="awesomeplete" data-multiple cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
             <br>
             <label for="sourceInput{{ .ID }}"><b>Source</b></label>
             <br>
@@ -94,21 +94,96 @@
 {{ end }}
 {{ define "script" }}
   <script>
-    function setScroll(e) {
-      var scroll = e.getAttribute("data-scroll");
-      document.getElementById("scroll").value = scroll;
-    }
-    function toggleAdvanced() {
-      b = document.getElementById("toggleButton");
-      div = document.getElementById("advanced");
-      // Empty display reverts to CSS rule, in this case none.
-      if (div.style.display == '') {
-        div.style.display = 'block';
-	b.innerHTML = "Advanced -";
-      } else {
-        div.style.display = '';
-	b.innerHTML = "Advanced +";
+    (function(){
+      "use strict";
+
+      function setScroll(e) {
+        var scroll = e.getAttribute("data-scroll");
+        document.getElementById("scroll").value = scroll;
       }
-    }
+
+      function toggleAdvanced() {
+        b = document.getElementById("toggleButton");
+        div = document.getElementById("advanced");
+        // Empty display reverts to CSS rule, in this case none.
+        if (div.style.display == '') {
+          div.style.display = 'block';
+          b.innerHTML = "Advanced -";
+        } else {
+          div.style.display = '';
+          b.innerHTML = "Advanced +";
+        }
+      }
+
+      // Autocomplete
+
+      var map = {};
+      var tas = document.querySelectorAll('textarea[data-multiple]');
+      tas.forEach(function(ta){
+        var ap = makeAwesomplete(ta);
+        map[ta.id] = ap;
+        ta.onkeyup = getTagsEventHandler;
+      });
+      function makeAwesomplete(ta) {
+        return new Awesomplete(ta, {
+          filter: function(text, input) {
+            return Awesomplete.FILTER_CONTAINS(text, input.match(/[^ ]*$/)[0]);
+          },
+
+          item: function(text, input) {
+            return Awesomplete.ITEM(text, input.match(/[^ ]*$/)[0]);
+          },
+
+          replace: function(text) {
+            var before = this.input.value.match(/^.+ \s*|/)[0];
+            this.input.value = before + text + " ";
+          },
+
+          //data: function (text, input) {
+          //  var query = input.match(/[^,]*$/)[0]
+          //  var contains = Awesomplete.FILTER_CONTAINS(text, input.match(/[^,]*$/)[0])
+          //  //getTags(query);
+          //  var dd = input.slice(0, input.indexOf("@")) + "@" + text
+	        //	return dd;
+	        //}
+        });
+      }
+
+      function getTagsEventHandler(e) {
+        var code = (e.keyCode || e.which);
+        // https://github.com/LeaVerou/awesomplete/issues/16802#issuecomment-303124988
+        if (code !== 37 && code !== 38 && code !== 39 && code !== 40 && code !== 27 && code !== 13) {
+          var input = this.value;
+          getTags(input.match(/[^ ]*$/)[0], this.id);
+        }
+      }
+
+      function getTags(query, apid) {
+        if (query == "" || query.length < 2) {
+          return;
+        }
+        var list=[];
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(response) {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              var tags = JSON.parse(xhr.responseText);
+              tags.forEach(function(item) {
+                list.push(item.consequent_name);
+              });
+              map[apid].list = list;
+              // Update the placeholder text.
+              //input.placeholder = "e.g. datalist";
+            } else {
+              // An error occured :(
+              //input.placeholder = "Couldn't load datalist options :(";
+            }
+          }
+        };
+        xhr.open("GET", "tags?q="+query, true);
+        xhr.send();
+      }
+
+    })();
   </script>
 {{ end }}

@@ -37,6 +37,8 @@ nav {
 	margin-bottom: 1em;
 }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
+
 {{ template "style" . }}
 
 <!--[if lt IE 9]>
@@ -47,7 +49,9 @@ nav {
 <body>
 <h1>Tagaa <small>{{printv .Version}}</small></h1>
 {{ template "content" . }}
-<script></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
+
+
 {{ template "script" . }}
 </body>
 
