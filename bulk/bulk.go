@@ -173,13 +173,13 @@ func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 	}
 
 	serverDir := record[0]
-	folder := filepath.Base(workingDir)
+	picFolder := filepath.Base(workingDir)
 	sep := fmt.Sprintf("%c", filepath.Separator)
-	if !strings.Contains(serverDir, folder) {
+	if !strings.Contains(serverDir, picFolder) {
 		return sep, nil
 	}
 	for {
-		if filepath.Base(serverDir) == folder {
+		if filepath.Base(serverDir) == picFolder {
 			break
 		} else {
 			serverDir, _ = filepath.Split(serverDir)
