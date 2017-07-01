@@ -164,7 +164,7 @@ func FindByID(image []Image, id int) *Image {
 // '/serverpath'.
 func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 	r := csv.NewReader(file)
-	record, err := r.Read()
+	firstLine, err := r.Read()
 	if err == io.EOF {
 		return "", nil
 	}
@@ -172,7 +172,7 @@ func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 		return "", err
 	}
 
-	serverDir := record[0]
+	serverDir := firstLine[0]
 	picFolder := filepath.Base(workingDir)
 	sep := fmt.Sprintf("%c", filepath.Separator)
 	if !strings.Contains(serverDir, picFolder) {
