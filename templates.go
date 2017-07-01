@@ -138,6 +138,8 @@ nav {
           <fieldset>
             <a id="tags{{ .ID }}"></a>
             <legend>{{ .Name }}</legend>
+            <a href="#img{{ .ID }}"><img class="image" src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
+            <br>
             <label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
             <br>
             <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
@@ -157,8 +159,6 @@ nav {
             <br>
             <input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
             <a id="img{{ .ID }}"></a>
-            <h3>{{ .Name }}</h3>
-            <a href="#img{{ .ID }}"><img class="image" src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
           </fieldset>
         </article>
         <br>
