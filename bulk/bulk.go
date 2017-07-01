@@ -172,20 +172,21 @@ func CurrentPrefix(dir string, file io.Reader) (string, error) {
 		return "", err
 	}
 
+	serverDir := record[0]
 	folder := filepath.Base(dir)
 	sep := fmt.Sprintf("%c", filepath.Separator)
-	prefix := sep
-	if !strings.Contains(record[0], folder) {
-		return prefix, nil
+	if !strings.Contains(serverDir, folder) {
+		return sep, nil
 	}
-	parts := strings.Split(record[0], sep)
-	for _, p := range parts {
-		if p == folder {
+	for {
+		if filepath.Base(serverDir) == folder {
 			break
+		} else {
+			serverDir, _ = filepath.Split(serverDir)
+			serverDir = filepath.Dir(serverDir)
 		}
-		prefix = filepath.Join(prefix, p)
 	}
-	return prefix, nil
+	return filepath.Dir(serverDir), nil
 }
 
 // Save will write the image metadata to an open for writing file. It will

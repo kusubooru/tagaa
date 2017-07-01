@@ -105,7 +105,7 @@ func TestCurrentPrefix(t *testing.T) {
 			t.Errorf("CurrentPrefix(%q, %q) returned err %q, want %q", tt.indir, tt.infile, err, want)
 		}
 		if want := tt.out; !reflect.DeepEqual(got, want) {
-			t.Errorf("CurrentPrefix(%q, %q) => %q, want %q", tt.indir, tt.infile, got, want)
+			t.Fatalf("CurrentPrefix(%q, %q) => %q, want %q", tt.indir, tt.infile, got, want)
 		}
 	}
 }
