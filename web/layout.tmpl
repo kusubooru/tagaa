@@ -34,6 +34,32 @@
       nav {
         margin-bottom: 1em;
       }
+
+      .loader {
+        display: none;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #006FFA;
+        border-right: 5px solid #006FFA;
+        width: 32px;
+        height: 32px;
+        -webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+        will-change: transform;
+      }
+      .loader-small {
+        width: 8px;
+        height: 8px;
+        border-width: 3px;
+      }
+      @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
     {{ template "style" . }}

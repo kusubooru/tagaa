@@ -48,6 +48,32 @@ var (
       nav {
         margin-bottom: 1em;
       }
+
+      .loader {
+        display: none;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #006FFA;
+        border-right: 5px solid #006FFA;
+        width: 32px;
+        height: 32px;
+        -webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+        will-change: transform;
+      }
+      .loader-small {
+        width: 8px;
+        height: 8px;
+        border-width: 3px;
+      }
+      @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
     {{ template "style" . }}
@@ -139,8 +165,9 @@ var (
             <a href="#img{{ .ID }}"><img class="image" src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
             <br>
             <label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
+            <div id="loader{{ .ID }}" class="loader loader-small"></div>
             <br>
-            <textarea id="tagsTextArea{{ .ID }}" name="image[{{ .ID }}].tags" class="awesomeplete" data-multiple cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
+            <textarea id="tagsTextArea{{ .ID }}" data-loader="loader{{ .ID }}" name="image[{{ .ID }}].tags" class="awesomeplete" data-multiple cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
             <br>
             <label for="sourceInput{{ .ID }}"><b>Source</b></label>
             <br>
@@ -223,25 +250,29 @@ var (
         if (code !== 37 && code !== 38 && code !== 39 && code !== 40 && code !== 27 && code !== 13) {
           var input = this.value;
           var id = this.id;
+          var loaderID = this.getAttribute('data-loader');
           // Wait for user to stop typing before getting tags:
           // https://schier.co/blog/2014/12/08/wait-for-user-to-stop-typing-using-javascript.html
           clearTimeout(timeout);
 
           timeout = setTimeout(function () {
-              getTags(input.match(/[^ ]*$/)[0], id);
+              getTags(input.match(/[^ ]*$/)[0], id, loaderID);
           }, 500);
         }
       }
 
-      function getTags(query, apid) {
+      function getTags(query, apid, loaderID) {
         if (query == "" || query.length < 3) {
           return;
         }
+        var loader = document.getElementById(loaderID);
+        loader.style.display = "inline-block";
         var list=[];
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function(response) {
           if (xhr.readyState === 4) {
             if (xhr.status === 200) {
+              loader.style.display = "none";
               var tags = JSON.parse(xhr.responseText);
               tags.forEach(function(item) {
                 var label = item.name;
@@ -295,32 +326,6 @@ var (
     .upload-button {
       display: inline-block;
       padding: 0.5em;
-    }
-
-    .loader {
-      display: none;
-      border: 5px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 5px solid #006FFA;
-      border-right: 5px solid #006FFA;
-      width: 32px;
-      height: 32px;
-      -webkit-animation: spin 1s linear infinite;
-      animation: spin 1s linear infinite;
-      will-change: transform;
-    }
-    .loader-small {
-      width: 8px;
-      height: 8px;
-      border-width: 3px;
-    }
-    @-webkit-keyframes spin {
-      0% { -webkit-transform: rotate(0deg); }
-      100% { -webkit-transform: rotate(360deg); }
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
   </style>
 {{end}}
