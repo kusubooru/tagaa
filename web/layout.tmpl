@@ -1,60 +1,54 @@
 {{ define "layout" }}
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Tagaa {{printv .Version}}</title>
+    <meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
+    <meta name="author" content="kusubooru">
 
-<head>
-<meta charset="utf-8">
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+      input {
+        margin-bottom: 0.6em;
+      }
+      .block {
+        display: block;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+      .block-danger {
+        background: #f2dede;
+        color: #333;
+      }
+      .block-success {
+        background: #dff0d8;
+        color: #333;
+      }
+      h1 small {
+        font-size:65%;
+        color:#777;
+      }
+      nav {
+        margin-bottom: 1em;
+      }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
+    {{ template "style" . }}
 
-<title>Tagaa {{printv .Version}}</title>
-<meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
-<meta name="author" content="kusubooru">
-
-<style>
-html {
-	font-family: sans-serif;
-}
-input {
-	margin-bottom: 0.6em;
-}
-.block {
-	display: block;
-	padding: 15px;
-	margin-bottom: 10px;
-}
-.block-danger {
-	background: #f2dede;
-	color: #333;
-}
-.block-success {
-	background: #dff0d8;
-	color: #333;
-}
-h1 small {
-	font-size:65%;
-	color:#777;
-}
-nav {
-	margin-bottom: 1em;
-}
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
-
-{{ template "style" . }}
-
-<!--[if lt IE 9]>
-	    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-</head>
+  </head>
 
-<body>
-<h1>Tagaa <small>{{printv .Version}}</small></h1>
-{{ template "content" . }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
-
-
-{{ template "script" . }}
-</body>
-
+  <body>
+    <h1>Tagaa <small>{{printv .Version}}</small></h1>
+    {{ template "content" . }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
+    {{ template "script" . }}
+  </body>
 </html>
 {{ end }}
 {{ define "style" }}{{end}}

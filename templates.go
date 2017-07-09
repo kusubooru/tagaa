@@ -15,60 +15,54 @@ var (
 {{ define "layout" }}
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Tagaa {{printv .Version}}</title>
+    <meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
+    <meta name="author" content="kusubooru">
 
-<head>
-<meta charset="utf-8">
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+      input {
+        margin-bottom: 0.6em;
+      }
+      .block {
+        display: block;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+      .block-danger {
+        background: #f2dede;
+        color: #333;
+      }
+      .block-success {
+        background: #dff0d8;
+        color: #333;
+      }
+      h1 small {
+        font-size:65%;
+        color:#777;
+      }
+      nav {
+        margin-bottom: 1em;
+      }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
+    {{ template "style" . }}
 
-<title>Tagaa {{printv .Version}}</title>
-<meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
-<meta name="author" content="kusubooru">
-
-<style>
-html {
-	font-family: sans-serif;
-}
-input {
-	margin-bottom: 0.6em;
-}
-.block {
-	display: block;
-	padding: 15px;
-	margin-bottom: 10px;
-}
-.block-danger {
-	background: #f2dede;
-	color: #333;
-}
-.block-success {
-	background: #dff0d8;
-	color: #333;
-}
-h1 small {
-	font-size:65%;
-	color:#777;
-}
-nav {
-	margin-bottom: 1em;
-}
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.css" />
-
-{{ template "style" . }}
-
-<!--[if lt IE 9]>
-	    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-</head>
+  </head>
 
-<body>
-<h1>Tagaa <small>{{printv .Version}}</small></h1>
-{{ template "content" . }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
-
-
-{{ template "script" . }}
-</body>
-
+  <body>
+    <h1>Tagaa <small>{{printv .Version}}</small></h1>
+    {{ template "content" . }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.2/awesomplete.min.js"></script>
+    {{ template "script" . }}
+  </body>
 </html>
 {{ end }}
 {{ define "style" }}{{end}}
@@ -214,30 +208,33 @@ nav {
 
           replace: function(text) {
             var before = this.input.value.match(/^.+ \s*|/)[0];
-            this.input.value = before + text + " ";
+            this.input.value = before + text.value + " ";
           },
-
-          //data: function (text, input) {
-          //  var query = input.match(/[^,]*$/)[0]
-          //  var contains = Awesomplete.FILTER_CONTAINS(text, input.match(/[^,]*$/)[0])
-          //  //getTags(query);
-          //  var dd = input.slice(0, input.indexOf("@")) + "@" + text
-	        //	return dd;
-	        //}
+          // Set sort function to false to disable sorting. Our backend handler
+          // returns items sorted by count (first kusubooru then danbooru).
+          sort: false
         });
       }
 
+      var timeout = null;
       function getTagsEventHandler(e) {
         var code = (e.keyCode || e.which);
         // https://github.com/LeaVerou/awesomplete/issues/16802#issuecomment-303124988
         if (code !== 37 && code !== 38 && code !== 39 && code !== 40 && code !== 27 && code !== 13) {
           var input = this.value;
-          getTags(input.match(/[^ ]*$/)[0], this.id);
+          var id = this.id;
+          // Wait for user to stop typing before getting tags:
+          // https://schier.co/blog/2014/12/08/wait-for-user-to-stop-typing-using-javascript.html
+          clearTimeout(timeout);
+
+          timeout = setTimeout(function () {
+              getTags(input.match(/[^ ]*$/)[0], id);
+          }, 500);
         }
       }
 
       function getTags(query, apid) {
-        if (query == "" || query.length < 2) {
+        if (query == "" || query.length < 3) {
           return;
         }
         var list=[];
@@ -247,7 +244,18 @@ nav {
             if (xhr.status === 200) {
               var tags = JSON.parse(xhr.responseText);
               tags.forEach(function(item) {
-                list.push(item.consequent_name);
+                var label = item.name;
+                if (item.old) {
+                  label = item.old+" → "+item.name;
+                }
+                if (item.category == "kusubooru") {
+                  label = '<img src="img/kusubooru.ico" style="float:left;margin-right:2px;height:16px;width:16px">' + label
+                }
+                if (item.category == "danbooru") {
+                  label = '<img src="img/danbooru.ico" style="float:left;margin-right:2px">' + label
+                }
+                label = label + '<span style="float:right">'+item.count+'</span>';
+                list.push({"label": label, "value": item.name, "cound": item.count});
               });
               map[apid].list = list;
               // Update the placeholder text.
