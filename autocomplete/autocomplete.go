@@ -2,6 +2,7 @@ package autocomplete
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -9,6 +10,8 @@ import (
 const (
 	danbooruAutocompleteURL = "https://danbooru.donmai.us/tags/autocomplete.json?search[name_matches]="
 	teianAutocompleteURL    = "https://kusubooru.com/suggest/autocomplete?q="
+	danbooruTagCategory     = "danbooru"
+	teianTagCategory        = "kusubooru"
 	minAllowedQueryLength   = 3
 )
 
@@ -19,23 +22,53 @@ type Tag struct {
 	Count    int    `json:"count"`
 }
 
+type autocompleteFn func(query string) ([]*Tag, error)
+
 func GetTags(q string) ([]*Tag, error) {
 	q = strings.TrimSpace(q)
 	if len(q) < minAllowedQueryLength {
 		return []*Tag{}, nil
 	}
-	teianTags, err := getTeianAutocomplete(q)
-	if err != nil {
-		return nil, err
+
+	errch := make(chan error)
+	defer close(errch)
+	tagsch := make(chan []*Tag)
+	defer close(tagsch)
+	autocompletes := []autocompleteFn{getTeianAutocomplete, getDanbooruAutocomplete}
+	for _, aufn := range autocompletes {
+		go func(fn autocompleteFn, query string) {
+			tags, err := fn(query)
+			if err != nil {
+				errch <- err
+				return
+			}
+			tagsch <- tags
+		}(aufn, q)
 	}
-	danbooruTags, err := getDanbooruAutocomplete(q)
-	if err != nil {
-		return nil, err
+	allTags := make([]*Tag, 0)
+	for range autocompletes {
+		select {
+		case err := <-errch:
+			log.Println("autocomplete failed:", err)
+		case tags := <-tagsch:
+			allTags = append(allTags, tags...)
+		}
 	}
-	tags := make([]*Tag, 0, len(teianTags)+len(danbooruTags))
-	tags = append(tags, teianTags...)
-	tags = append(tags, danbooruTags...)
-	return tags, nil
+	// Results come already sorted by count desc. Now we need to separate them
+	// and make sure the teianTagCategory category appears first.
+	teianTags := make([]*Tag, 0)
+	danbooruTags := make([]*Tag, 0)
+	for _, t := range allTags {
+		if t.Category == teianTagCategory {
+			teianTags = append(teianTags, t)
+		} else {
+			danbooruTags = append(danbooruTags, t)
+		}
+	}
+	allTags = make([]*Tag, 0, len(teianTags)+len(danbooruTags))
+	allTags = append(allTags, teianTags...)
+	allTags = append(allTags, danbooruTags...)
+	return allTags, nil
 }
 
 func getTeianAutocomplete(q string) ([]*Tag, error) {
@@ -49,13 +82,12 @@ func getTeianAutocomplete(q string) ([]*Tag, error) {
 		return nil, err
 	}
 	for _, t := range tags {
-		t.Category = "kusubooru"
+		t.Category = teianTagCategory
 	}
 	return tags, nil
 }
 
 func getDanbooruAutocomplete(query string) ([]*Tag, error) {
-	// Get danbooru autocomplete tags.
 	resp, err := http.Get(danbooruAutocompleteURL + "*" + query + "*")
 	if err != nil {
 		return nil, err
