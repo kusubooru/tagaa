@@ -23,6 +23,7 @@ import (
 
 //go:generate go run generate/templates.go
 //go:generate go run generate/swf.go
+//go:generate go run generate/favicons.go
 
 var (
 	theVersion = "devel"
@@ -338,11 +339,28 @@ func saveToCSVFile(m *model) error {
 
 func serveImage(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
+	// Check in case we need to serve the two favicons.
+	if idStr == "kusubooru.ico" {
+		if _, err := w.Write(kusubooruIcoBytes); err != nil {
+			http.Error(w, fmt.Sprintf("could not write kusubooru ico bytes: %v", err), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+	if idStr == "danbooru.ico" {
+		if _, err := w.Write(danbooruIcoBytes); err != nil {
+			http.Error(w, fmt.Sprintf("could not write danbooru ico bytes: %v", err), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("%v is not a valid image ID", idStr), http.StatusBadRequest)
 		return
 	}
+
 	img := bulk.FindByID(globalModel.Images, id)
 	if img == nil {
 		http.Error(w, fmt.Sprintf("no image found with ID: %v", id), http.StatusNotFound)
@@ -351,11 +369,11 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	// In case of image name that ends with '.swf', we serve embedded image
 	// bytes from swf.go as it's not trivial to display a .swf file.
 	if strings.HasSuffix(img.Name, ".swf") {
-		_, err = w.Write(swfImageBytes)
-		if err != nil {
+		if _, err := w.Write(swfImageBytes); err != nil {
 			http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
 			return
 		}
+		return
 	}
 
 	p := filepath.Join(*directory, img.Name)
