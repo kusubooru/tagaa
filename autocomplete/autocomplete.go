@@ -7,39 +7,86 @@ import (
 )
 
 const (
-	danbooruTagsURL       = "https://danbooru.donmai.us/tags.json?search[name_matches]="
-	danbooruTagAliasesURL = "https://danbooru.donmai.us/tag_aliases.json?search[name_matches]="
+	danbooruAutocompleteURL = "https://danbooru.donmai.us/tags/autocomplete.json?search[name_matches]="
+	teianAutocompleteURL    = "https://kusubooru.com/suggest/autocomplete?q="
+	minAllowedQueryLength   = 3
 )
 
-func GetTags(query string) ([]*DanbooruTagAlias, error) {
-	query = strings.TrimSpace(query)
-	if len(query) < 2 {
-		return []*DanbooruTagAlias{}, nil
+type Tag struct {
+	Category string `json:"category"`
+	Name     string `json:"name"`
+	Old      string `json:"old"`
+	Count    int    `json:"count"`
+}
+
+func GetTags(q string) ([]*Tag, error) {
+	q = strings.TrimSpace(q)
+	if len(q) < minAllowedQueryLength {
+		return []*Tag{}, nil
 	}
-	if query == "" {
-		return []*DanbooruTagAlias{}, nil
+	teianTags, err := getTeianAutocomplete(q)
+	if err != nil {
+		return nil, err
 	}
-	resp, err := http.Get(danbooruTagAliasesURL + "*" + query + "*")
+	danbooruTags, err := getDanbooruAutocomplete(q)
+	if err != nil {
+		return nil, err
+	}
+	tags := make([]*Tag, 0, len(teianTags)+len(danbooruTags))
+	tags = append(tags, teianTags...)
+	tags = append(tags, danbooruTags...)
+	return tags, nil
+}
+
+func getTeianAutocomplete(q string) ([]*Tag, error) {
+	resp, err := http.Get(teianAutocompleteURL + q)
 	if err != nil {
 		return nil, err
 	}
 
-	var tags []*DanbooruTagAlias
+	var tags []*Tag
 	if err := json.NewDecoder(resp.Body).Decode(&tags); err != nil {
 		return nil, err
+	}
+	for _, t := range tags {
+		t.Category = "kusubooru"
 	}
 	return tags, nil
 }
 
-type DanbooruTagAlias struct {
-	ID             int    `json:"id"`
-	AntecedentName string `json:"antecedent_name"`
-	Reason         string `json:"reason"`
-	CreatorID      int    `json:"creator_id"`
-	ConsequentName string `json:"consequent_name"`
-	Status         string `json:"status"`
-	ForumTopicID   int    `json:"forum_topic_id"`
-	CreatedAt      string `json:"created_at"`
-	UpdatedAt      string `json:"updated_at"`
-	PostCount      int    `json:"post_count"`
+func getDanbooruAutocomplete(query string) ([]*Tag, error) {
+	// Get danbooru autocomplete tags.
+	resp, err := http.Get(danbooruAutocompleteURL + "*" + query + "*")
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode result JSON.
+	type danbooruAutocomplete struct {
+		Name           string `json:"name"`
+		PostCount      int    `json:"post_count"`
+		Category       int    `json:"category"`
+		AntecedentName string `json:"antecedent_name"`
+	}
+	var acTags []*danbooruAutocomplete
+	if err := json.NewDecoder(resp.Body).Decode(&acTags); err != nil {
+		return nil, err
+	}
+
+	// Convert databooruAutocomplete to Tag.
+	tags := make([]*Tag, 0, len(acTags))
+	for _, ac := range acTags {
+		//fmt.Printf("%#v\n", ac)
+		t := &Tag{
+			Name:     ac.Name,
+			Count:    ac.PostCount,
+			Old:      ac.AntecedentName,
+			Category: "danbooru",
+		}
+		tags = append(tags, t)
+	}
+	if len(tags) > 5 {
+		return tags[:5], nil
+	}
+	return tags, nil
 }
