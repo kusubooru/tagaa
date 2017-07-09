@@ -427,9 +427,9 @@ var (
         loader.style.display = "none";
         if(xhr.readyState == 4 && xhr.status == 200) {
           resultLabel.innerHTML = "Ok!";
-	} else if(xhr.readyState == 4 && xhr.status != 200) {
-	  var reason = "";
-	  if (xhr.responseText) { reason = ": " + xhr.responseText }
+	      } else if(xhr.readyState == 4 && xhr.status != 200) {
+	        var reason = "";
+	        if (xhr.responseText) { reason = ": " + xhr.responseText }
           resultLabel.innerHTML = "Failed" + reason;
         }
       }
