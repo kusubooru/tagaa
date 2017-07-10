@@ -199,6 +199,9 @@ var (
       <br>
       <input id="useLinuxSepInput" type="checkbox" name="useLinuxSep" {{if eq .UseLinuxSep true}}checked{{end}}>
       (Check, if working on a windows machine and want to upload to a Linux machine)
+      <br>
+      <input id="deleteCacheKey" type="text">
+      <button id="deleteCacheButton" type="button">Delete Tag from Cache</button>
       <input id="scroll" type="hidden" name="scroll" value="">
     </div>
 
@@ -306,7 +309,6 @@ var (
             }
             if (item.old) {
               var cclass = categoryClass(item.category);
-              console.log(cclass);
               var old = document.createElement('span');
               old.innerHTML = item.old;
               old.className = cclass;
@@ -376,6 +378,12 @@ var (
       }
 
       var cache = localStorage;
+
+      var deleteCacheButton = document.getElementById("deleteCacheButton");
+      deleteCacheButton.onclick = function(e) {
+        var key = document.getElementById("deleteCacheKey").value;
+        cache.removeItem(key);
+      }
 
       function getTags(query, apid, loaderID) {
         if (query == "" || query.length < 3) {
