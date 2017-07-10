@@ -161,6 +161,7 @@ var (
         <article>
           <fieldset>
             <a id="tags{{ .ID }}"></a>
+            <a id="img{{ .ID }}"></a>
             <legend>{{ .Name }}</legend>
             <a href="#img{{ .ID }}"><img class="image" src="/img/{{ .ID }}" alt="{{ .Name }}"></a>
             <br>
@@ -183,7 +184,6 @@ var (
             <label for="eRadio{{ .ID }}">Explicit</label>
             <br>
             <input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
-            <a id="img{{ .ID }}"></a>
           </fieldset>
         </article>
         <br>
