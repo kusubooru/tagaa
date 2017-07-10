@@ -267,25 +267,35 @@ var (
             // count, category and old.
             var item = JSON.parse(text.label);
             var li = document.createElement('li');
-            if (item.category && item.category == "kusubooru") {
+            if (item.board && item.board == "kusubooru") {
               var img = document.createElement('img')
               img.src = "/img/kusubooru.ico"
               img.style = "float:left;margin-right:3px;height:16px;width:16px";
               li.appendChild(img);
             }
-            if (item.category && item.category == "danbooru") {
+            if (item.board && item.board == "danbooru") {
               var img = document.createElement('img');
               img.src = "/img/danbooru.ico"
               img.style = "float:left;margin-right:3px";
               li.appendChild(img);
             }
             if (item.old) {
-              var span = document.createElement('span');
-              span.innerHTML = item.old + " → " + item.name;
-              li.appendChild(span);
+              var color = categoryColor(item.category);
+              var old = document.createElement('span');
+              old.innerHTML = item.old;
+              old.style.color = color;
+              var name = document.createElement('span');
+              name.innerHTML = item.name;
+              name.style.color = color;
+              var arrow = document.createElement('span');
+              arrow.innerHTML = " → ";
+              li.appendChild(old);
+              li.appendChild(arrow);
+              li.appendChild(name);
             } else {
               var span = document.createElement('span');
               span.innerHTML = item.name;
+              span.style.color = categoryColor(item.category);
               li.appendChild(span);
             }
             if (item.count) {
@@ -305,6 +315,20 @@ var (
           // returns items sorted by count (first kusubooru then danbooru).
           sort: false
         });
+      }
+      function categoryColor(category) {
+        switch (category) {
+          case "tk":
+            return "#ee5542";
+          case "artist":
+            return "#a00";
+          case "series":
+            return "#a0a";
+          case "character":
+            return "#0a0";
+          default:
+            return "#0073ff";
+        }
       }
 
       var timeout = null;
