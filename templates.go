@@ -256,12 +256,45 @@ var (
       });
       function makeAwesomplete(ta) {
         return new Awesomplete(ta, {
+          minChars: 3,
           filter: function(text, input) {
             return Awesomplete.FILTER_CONTAINS(text, input.match(/[^ ]*$/)[0]);
           },
 
           item: function(text, input) {
-            return Awesomplete.ITEM(text, input.match(/[^ ]*$/)[0]);
+            // We have previously stored the tag returned by the server as JSON
+            // text in the label in order to access the extra information like
+            // count, category and old.
+            var item = JSON.parse(text.label);
+            var li = document.createElement('li');
+            if (item.category && item.category == "kusubooru") {
+              var img = document.createElement('img')
+              img.src = "/img/kusubooru.ico"
+              img.style = "float:left;margin-right:3px;height:16px;width:16px";
+              li.appendChild(img);
+            }
+            if (item.category && item.category == "danbooru") {
+              var img = document.createElement('img');
+              img.src = "/img/danbooru.ico"
+              img.style = "float:left;margin-right:3px";
+              li.appendChild(img);
+            }
+            if (item.old) {
+              var span = document.createElement('span');
+              span.innerHTML = item.old + " → " + item.name;
+              li.appendChild(span);
+            } else {
+              var span = document.createElement('span');
+              span.innerHTML = item.name;
+              li.appendChild(span);
+            }
+            if (item.count) {
+              var count = document.createElement('span');
+              count.innerHTML = item.count;
+              count.style = "float:right";
+              li.appendChild(count);
+            }
+            return li;
           },
 
           replace: function(text) {
@@ -292,44 +325,51 @@ var (
         }
       }
 
+      var cache = localStorage;
+
       function getTags(query, apid, loaderID) {
         if (query == "" || query.length < 3) {
           return;
         }
+        var hit = cache.getItem(query);
+        if (hit) {
+          var obj = JSON.parse(hit);
+          var now = new Date().getTime();
+          if (now < obj.expires) {
+            updateTags(obj.value, map, apid);
+            return
+          }
+        }
         var loader = document.getElementById(loaderID);
         loader.style.display = "inline-block";
-        var list=[];
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function(response) {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              loader.style.display = "none";
-              var tags = JSON.parse(xhr.responseText);
-              tags.forEach(function(item) {
-                var label = item.name;
-                if (item.old) {
-                  label = item.old+" → "+item.name;
-                }
-                if (item.category == "kusubooru") {
-                  label = '<img src="img/kusubooru.ico" style="float:left;margin-right:2px;height:16px;width:16px">' + label
-                }
-                if (item.category == "danbooru") {
-                  label = '<img src="img/danbooru.ico" style="float:left;margin-right:2px">' + label
-                }
-                label = label + '<span style="float:right">'+item.count+'</span>';
-                list.push({"label": label, "value": item.name, "cound": item.count});
-              });
-              map[apid].list = list;
-              // Update the placeholder text.
-              //input.placeholder = "e.g. datalist";
-            } else {
-              // An error occured :(
-              //input.placeholder = "Couldn't load datalist options :(";
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            loader.style.display = "none";
+            var tags = JSON.parse(xhr.responseText);
+            var now = new Date().getTime();
+            // Get the current time and add (day * hour * min * sec * msec).
+            var inOneWeek = now + (7 * 24 * 60 * 60 * 1000);
+            var object = {
+              value: tags,
+              timestamp: now,
+              expires: inOneWeek
             }
+            cache.setItem(query, JSON.stringify(object));
+            updateTags(tags, map, apid);
           }
         };
         xhr.open("GET", "tags?q="+query, true);
         xhr.send();
+      }
+
+      function updateTags(tags, apmap, apid) {
+        var list=[];
+        tags.forEach(function(item) {
+          var label = JSON.stringify(item);
+          list.push({"label": label, "value": item.name});
+        });
+        apmap[apid].list = list;
       }
 
     })();
