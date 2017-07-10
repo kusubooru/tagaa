@@ -6,15 +6,42 @@
     .image {
       max-width: 100%;
     }
+    /* Roughly equivalent to cols= 60 and rows = 6 original sizes. */
+    .tags-textarea {
+      width: 37em;
+      height: 7em;
+    }
+    .medium-input {
+      width: 37em;
+    }
+    .chomp {
+      width: 37em;
+    }
+    @media (max-width: 768px) {
+      /* TODO: Why need this? On mobile view with width 100% the inputs in
+       * advanced div exceed max width and scrolling appears. It should be
+       * possible to keep all inputs on width: 100% without them exceeding the
+       * screen. */
+      .chomp {
+        width: 98%;
+      }
+      .tags-textarea {
+        width: 100%;
+      }
+      .awesomplete {
+        width: 100%;
+      }
+      .medium-input {
+        width: 100%;
+        padding: 0;
+      }
+    }
   </style>
 {{ end }}
 {{ define "content" }}
   <nav>
     <a href="/upload">Upload</a>
   </nav>
-
-  {{ $inputSize := 60 }}
-  {{ $taRows := 6 }}
 
   {{ if .Err }}
     <div class="block block-danger">
@@ -33,16 +60,16 @@
     <div id="advanced">
       <label for="csvFilenameInput"><b>CSV Filename</b></label>
       <br>
-      <input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" size="{{ $inputSize }}">
+      <input id="csvFilenameInput" type="text" name="csvFilename" value="{{ .CSVFilename }}" class="chomp">
       <input id="saveCSVSubmit" type="submit" value="Save to CSV">
       <br>
       <label for="directory"><b>Working Directory</b></label>
       <br>
-      <input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled size="{{ $inputSize }}">
+      <input id="directory" type="text" name="prefix" value="{{ .WorkingDir }}" disabled class="chomp">
       <br>
       <label for="prefixInput"><b>Server Path Prefix</b> (It will replace working directory path prefix)</label>
       <br>
-      <input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" size="{{ $inputSize }}">
+      <input id="prefixInput" type="text" name="prefix" value="{{ .Prefix }}" class="chomp">
       <br>
       <label for="useLinuxSepInput"><b>Use Linux Separator "/" when saving to CSV</b> </label>
       <br>
@@ -70,11 +97,11 @@
             <label for="tagsTextArea{{ .ID }}"><b>Tags</b></label>
             <div id="loader{{ .ID }}" class="loader loader-small"></div>
             <br>
-            <textarea id="tagsTextArea{{ .ID }}" data-loader="loader{{ .ID }}" name="image[{{ .ID }}].tags" class="awesomeplete" data-multiple cols="{{ $inputSize }}" rows="{{ $taRows }}">{{ join .Tags " " }}</textarea>
+            <textarea id="tagsTextArea{{ .ID }}" data-loader="loader{{ .ID }}" name="image[{{ .ID }}].tags" class="tags-textarea awesomeplete" data-multiple >{{ join .Tags " " }}</textarea>
             <br>
             <label for="sourceInput{{ .ID }}"><b>Source</b></label>
             <br>
-            <input id="sourceInput{{ .ID }}" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" size="{{ $inputSize }}">
+            <input id="sourceInput{{ .ID }}" class="medium-input" type="text" name="image[{{ .ID }}].source" value="{{ .Source }}" >
             <br>
             <label><b>Rating</b></label>
             <br>
