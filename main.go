@@ -337,10 +337,13 @@ func saveToCSVFile(m *model) error {
 	return bulk.Save(f, m.Images, m.WorkingDir, m.Prefix, m.UseLinuxSep)
 }
 
+const cachePublic1Year = "public, max-age=31536000"
+
 func serveImage(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 	// Check in case we need to serve the two favicons.
 	if idStr == "kusubooru.ico" {
+		w.Header().Set("Cache-Control", cachePublic1Year)
 		if _, err := w.Write(kusubooruIcoBytes); err != nil {
 			http.Error(w, fmt.Sprintf("could not write kusubooru ico bytes: %v", err), http.StatusInternalServerError)
 			return
@@ -348,6 +351,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if idStr == "danbooru.ico" {
+		w.Header().Set("Cache-Control", cachePublic1Year)
 		if _, err := w.Write(danbooruIcoBytes); err != nil {
 			http.Error(w, fmt.Sprintf("could not write danbooru ico bytes: %v", err), http.StatusInternalServerError)
 			return
@@ -369,6 +373,7 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	// In case of image name that ends with '.swf', we serve embedded image
 	// bytes from swf.go as it's not trivial to display a .swf file.
 	if strings.HasSuffix(img.Name, ".swf") {
+		w.Header().Set("Cache-Control", cachePublic1Year)
 		if _, err := w.Write(swfImageBytes); err != nil {
 			http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
 			return
@@ -392,8 +397,8 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("could not read image: %v", err), http.StatusInternalServerError)
 		return
 	}
-	_, err = w.Write(data)
-	if err != nil {
+	w.Header().Set("Cache-Control", cachePublic1Year)
+	if _, err = w.Write(data); err != nil {
 		http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
 		return
 	}
