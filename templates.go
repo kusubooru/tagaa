@@ -17,6 +17,7 @@ var (
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tagaa {{printv .Version}}</title>
     <meta name="description" content="Interface for the 'Bulk Add CSV' Shimmie2 extension">
     <meta name="author" content="kusubooru">
