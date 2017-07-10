@@ -17,6 +17,31 @@
     .chomp {
       width: 37em;
     }
+    .tag {
+      color: #0073ff;
+    }
+    .tag-tk {
+      color: #ee5542;
+    }
+    .tag-artist {
+      color: #a00;
+    }
+    .tag-series {
+      color: #a0a;
+    }
+    .tag-character {
+      color: #0a0;
+    }
+    .tag-count {
+      float: right;
+    }
+    .tag-favicon {
+      float: left;
+      margin-right: 3px;
+      height: 16px;
+      width: 16px
+    }
+
     @media (max-width: 768px) {
       /* TODO: Why need this? On mobile view with width 100% the inputs in
        * advanced div exceed max width and scrolling appears. It should be
@@ -171,23 +196,24 @@
             if (item.board && item.board == "kusubooru") {
               var img = document.createElement('img')
               img.src = "/img/kusubooru.ico"
-              img.style = "float:left;margin-right:3px;height:16px;width:16px";
+              img.className = "tag-favicon";
               li.appendChild(img);
             }
             if (item.board && item.board == "danbooru") {
               var img = document.createElement('img');
               img.src = "/img/danbooru.ico"
-              img.style = "float:left;margin-right:3px";
+              img.className = "tag-favicon";
               li.appendChild(img);
             }
             if (item.old) {
-              var color = categoryColor(item.category);
+              var cclass = categoryClass(item.category);
+              console.log(cclass);
               var old = document.createElement('span');
               old.innerHTML = item.old;
-              old.style.color = color;
+              old.className = cclass;
               var name = document.createElement('span');
               name.innerHTML = item.name;
-              name.style.color = color;
+              name.className = cclass;
               var arrow = document.createElement('span');
               arrow.innerHTML = " → ";
               li.appendChild(old);
@@ -196,13 +222,13 @@
             } else {
               var span = document.createElement('span');
               span.innerHTML = item.name;
-              span.style.color = categoryColor(item.category);
+              span.className = categoryClass(item.category);
               li.appendChild(span);
             }
             if (item.count) {
               var count = document.createElement('span');
               count.innerHTML = item.count;
-              count.style = "float:right";
+              count.className = "tag-count";
               li.appendChild(count);
             }
             return li;
@@ -217,18 +243,18 @@
           sort: false
         });
       }
-      function categoryColor(category) {
+      function categoryClass(category) {
         switch (category) {
           case "tk":
-            return "#ee5542";
+            return "tag-tk";
           case "artist":
-            return "#a00";
+            return "tag-artist";
           case "series":
-            return "#a0a";
+            return "tag-series";
           case "character":
-            return "#0a0";
+            return "tag-character";
           default:
-            return "#0073ff";
+            return "tag";
         }
       }
 
