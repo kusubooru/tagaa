@@ -124,7 +124,7 @@ var (
     <br>
     <input id="loadCSVFile" name="csvFilename" type="file" accept=".csv" required>
     <input type="submit" value="Load from CSV">
-    <button id="toggleButton" type="button" onclick="toggleAdvanced()">Advanced +</button>
+    <button id="toggleButton" type="button">Advanced +</button>
     <br>
   </form>
   <form action="/update" method="POST">
@@ -201,9 +201,12 @@ var (
         document.getElementById("scroll").value = scroll;
       }
 
+      var toggleButton = document.getElementById("toggleButton")
+      toggleButton.onclick = toggleAdvanced;
+
       function toggleAdvanced() {
-        b = document.getElementById("toggleButton");
-        div = document.getElementById("advanced");
+        var b = document.getElementById("toggleButton");
+        var div = document.getElementById("advanced");
         // Empty display reverts to CSS rule, in this case none.
         if (div.style.display == '') {
           div.style.display = 'block';
