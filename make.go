@@ -3,12 +3,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -111,6 +113,10 @@ func forEachBinary(bin binary, fn binaryFunc) {
 }
 
 func buildBinary(bin binary, OS, arch string) {
+	if OS == "windows" {
+		runGoVersionInfo(bin, arch)
+		defer rmGoVersionInfo(arch)
+	}
 	ldflags := fmt.Sprintf("--ldflags=-X main.theVersion=%s", bin.version)
 	cmd := exec.Command("go", "build", ldflags, "-o", bin.Name(OS, arch))
 	cmd.Stdout = os.Stdout
@@ -123,6 +129,145 @@ func buildBinary(bin binary, OS, arch string) {
 	if err := cmd.Run(); err != nil {
 		log.Fatalln("Error running go build:", err)
 	}
+}
+
+func rmGoVersionInfoJSON() {
+	err := os.Remove("versioninfo.json")
+	if err != nil {
+		if !os.IsNotExist(err) {
+			fmt.Fprintln(os.Stderr, "Error removing versioninfo.json:", err)
+		}
+	}
+}
+
+// generateGoVersionInfoJSON will generate a default versioninfo.json file so
+// that the goversioninfo command can work.
+func generateGoVersionInfoJSON() {
+	type VersionInfo struct {
+		FixedFileInfo struct {
+			FileVersion struct {
+				Major int `json:"Major"`
+				Minor int `json:"Minor"`
+				Patch int `json:"Patch"`
+				Build int `json:"Build"`
+			} `json:"FileVersion"`
+			ProductVersion struct {
+				Major int `json:"Major"`
+				Minor int `json:"Minor"`
+				Patch int `json:"Patch"`
+				Build int `json:"Build"`
+			} `json:"ProductVersion"`
+			FileFlagsMask string `json:"FileFlagsMask"`
+			FileFlags     string `json:"FileFlags "`
+			FileOS        string `json:"FileOS"`
+			FileType      string `json:"FileType"`
+			FileSubType   string `json:"FileSubType"`
+		} `json:"FixedFileInfo"`
+		StringFileInfo struct {
+			Comments         string `json:"Comments"`
+			CompanyName      string `json:"CompanyName"`
+			FileDescription  string `json:"FileDescription"`
+			FileVersion      string `json:"FileVersion"`
+			InternalName     string `json:"InternalName"`
+			LegalCopyright   string `json:"LegalCopyright"`
+			LegalTrademarks  string `json:"LegalTrademarks"`
+			OriginalFilename string `json:"OriginalFilename"`
+			PrivateBuild     string `json:"PrivateBuild"`
+			ProductName      string `json:"ProductName"`
+			ProductVersion   string `json:"ProductVersion"`
+			SpecialBuild     string `json:"SpecialBuild"`
+		} `json:"StringFileInfo"`
+		VarFileInfo struct {
+			Translation struct {
+				LangID    string `json:"LangID"`
+				CharsetID string `json:"CharsetID"`
+			} `json:"Translation"`
+		} `json:"VarFileInfo"`
+	}
+
+	// Defaults found at:
+	// https://github.com/josephspurrier/goversioninfo/blob/096c7bd04a78bdb9b1bd32f81243644544e86f5c/versioninfo.json
+	vi := VersionInfo{}
+	vi.FixedFileInfo.FileVersion.Major = 1
+	vi.FixedFileInfo.ProductVersion.Major = 1
+	vi.StringFileInfo.ProductVersion = "v1.0.0.0"
+	vi.FixedFileInfo.FileFlagsMask = "3f"
+	vi.FixedFileInfo.FileFlags = "00"
+	vi.FixedFileInfo.FileOS = "040004"
+	vi.FixedFileInfo.FileType = "01"
+	vi.FixedFileInfo.FileSubType = "00"
+	vi.VarFileInfo.Translation.LangID = "0409"
+	vi.VarFileInfo.Translation.CharsetID = "04B0"
+	f, err := os.Create("versioninfo.json")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error creating versioninfo.json:", err)
+		return
+	}
+	defer f.Close()
+	if err := json.NewEncoder(f).Encode(vi); err != nil {
+		fmt.Fprintln(os.Stderr, "error encoding version info to JSON:", err)
+		return
+	}
+}
+
+func runGoVersionInfo(bin binary, arch string) {
+	generateGoVersionInfoJSON()
+	defer rmGoVersionInfoJSON()
+	major, minor, patch, err := parseVersion(bin.version)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error parsing version:", err)
+	}
+	args := []string{
+		fmt.Sprintf("-company=%s", "Kusubooru Inc."),
+		fmt.Sprintf("-copyright=%s", "Copyright (C) 2015 Kusubooru Inc."),
+		fmt.Sprintf("-product-name=%s", "Tagaa"),
+		fmt.Sprintf("-product-version=%s", bin.version),
+		fmt.Sprintf("-description=%s", "Tag images locally"),
+		fmt.Sprintf("-original-name=%s", bin.Name("windows", arch)),
+		fmt.Sprintf("-o=resource_windows_%s.syso", arch),
+		fmt.Sprintf("-ver-major=%d", major),
+		fmt.Sprintf("-ver-minor=%d", minor),
+		fmt.Sprintf("-ver-patch=%d", patch),
+	}
+	cmd := exec.Command("goversioninfo", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = copyGoEnv()
+	if err := cmd.Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error running goversioninfo:", err)
+	}
+}
+
+func rmGoVersionInfo(arch string) {
+	err := os.Remove(fmt.Sprintf("resource_windows_%s.syso", arch))
+	if err != nil {
+		if !os.IsNotExist(err) {
+			fmt.Fprintln(os.Stderr, "Error removing syso file:", err)
+		}
+	}
+}
+
+func parseVersion(version string) (major, minor, patch int, err error) {
+	if strings.HasPrefix(version, "v") {
+		version = strings.TrimPrefix(version, "v")
+	}
+	if strings.Contains(version, "-") {
+		version = version[:strings.Index(version, "-")]
+	}
+	v := strings.Split(version, ".")
+	major, err = strconv.Atoi(v[0])
+	if err != nil {
+		return
+	}
+	minor, err = strconv.Atoi(v[1])
+	if err != nil {
+		return
+	}
+	patch, err = strconv.Atoi(v[2])
+	if err != nil {
+		return
+	}
+	return
 }
 
 func rmBinary(bin binary, OS, arch string) {
