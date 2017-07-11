@@ -239,7 +239,7 @@ var (
             <input id="eRadio{{ .ID }}" type="radio" name="image[{{ .ID }}].rating" value="e" {{ if eq .Rating "e" }}checked{{ end }}>
             <label for="eRadio{{ .ID }}">Explicit</label>
             <br>
-            <input type="submit" value="Save to CSV" onclick="setScroll(this)" data-scroll="#tags{{.ID}}">
+            <input class="save-to-csv" type="submit" value="Save to CSV" data-scroll="#tags{{.ID}}">
           </fieldset>
         </article>
         <br>
@@ -252,8 +252,12 @@ var (
     (function(){
       "use strict";
 
-      function setScroll(e) {
-        var scroll = e.getAttribute("data-scroll");
+      var csvButtons = document.getElementsByClassName("save-to-csv");
+      for(var i=0; i < csvButtons.length; i++) {
+          csvButtons[i].onclick = setScroll;
+      }
+      function setScroll() {
+        var scroll = this.getAttribute("data-scroll");
         document.getElementById("scroll").value = scroll;
       }
 
