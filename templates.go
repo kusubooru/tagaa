@@ -252,8 +252,15 @@ var (
     (function(){
       "use strict";
 
-      // Send POST /exit when window closes.
-      window.onbeforeunload = function (event) {
+      // When mouse leaves the window, the exit handler gets enabled.
+      window.onmouseout = function() {
+        window.onbeforeunload = exitHandler;
+      }
+      window.onmouseover = function() {
+        window.onbeforeunload = null;
+      }
+
+      function exitHandler(event) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "exit", true);
         xhr.send();
