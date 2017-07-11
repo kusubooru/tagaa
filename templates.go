@@ -252,6 +252,13 @@ var (
     (function(){
       "use strict";
 
+      // Send POST /exit when window closes.
+      window.onbeforeunload = function (event) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "exit", true);
+        xhr.send();
+      };
+
       var csvButtons = document.getElementsByClassName("save-to-csv");
       for(var i=0; i < csvButtons.length; i++) {
           csvButtons[i].onclick = setScroll;

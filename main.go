@@ -54,6 +54,7 @@ var (
 	openBrowser = flag.Bool("openbrowser", true, "open browser automatically")
 	version     = flag.Bool("v", false, "print program version")
 	uploadURL   = flag.String("uploadurl", "https://kusubooru.com/suggest/upload", "URL to upload zip file")
+	noexit      = flag.Bool("noexit", false, "if set to true the program will keep running even if the browser window closes")
 )
 
 const description = `
@@ -152,6 +153,7 @@ func run() error {
 	http.Handle("/upload", http.HandlerFunc(uploadHandler))
 	http.Handle("/tags", http.HandlerFunc(tagsHandler))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+	http.Handle("/exit", http.HandlerFunc(exitHandler))
 
 	go func() {
 		localURL := fmt.Sprintf("http://localhost:%v", *port)
@@ -401,6 +403,15 @@ func serveImage(w http.ResponseWriter, r *http.Request) {
 	if _, err = w.Write(data); err != nil {
 		http.Error(w, fmt.Sprintf("could not write image bytes: %v", err), http.StatusInternalServerError)
 		return
+	}
+}
+
+func exitHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+	}
+	if !*noexit {
+		os.Exit(0)
 	}
 }
 
