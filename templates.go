@@ -261,7 +261,7 @@ var (
         document.getElementById("scroll").value = scroll;
       }
 
-      var toggleButton = document.getElementById("toggleButton")
+      var toggleButton = document.getElementById("toggleButton");
       toggleButton.onclick = toggleAdvanced;
 
       function toggleAdvanced() {

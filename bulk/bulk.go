@@ -189,11 +189,55 @@ func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 	return filepath.Dir(serverDir), nil
 }
 
+func sortTags(tags []string) []string {
+	seen := make(map[string]struct{}, len(tags))
+	sort.Strings(tags)
+	var (
+		all       = make([]string, 0)
+		series    = make([]string, 0)
+		character = make([]string, 0)
+		artist    = make([]string, 0)
+		tk        = make([]string, 0)
+		normal    = make([]string, 0)
+	)
+	for _, t := range tags {
+		if _, ok := seen[t]; ok {
+			continue
+		}
+		seen[t] = struct{}{}
+		switch {
+		case strings.HasPrefix(t, "series:"):
+			series = append(series, t)
+		case strings.HasPrefix(t, "character:"):
+			character = append(character, t)
+		case strings.HasPrefix(t, "artist:"):
+			artist = append(artist, t)
+		case strings.HasPrefix(t, "tk:"):
+			tk = append(tk, t)
+		default:
+			normal = append(normal, t)
+		}
+	}
+	all = append(all, series...)
+	all = append(all, character...)
+	all = append(all, artist...)
+	all = append(all, tk...)
+	all = append(all, normal...)
+	return all
+}
+
 // Save will write the image metadata to an open for writing file. It will
 // keep the base of the dir path and replace the prefix with the provided one.
 func Save(file io.Writer, images []Image, dir, prefix string, useLinuxSep bool) error {
+	// Sort each image's tags.
+	sorted := make([]Image, 0, len(images))
+	for _, img := range images {
+		img.Tags = sortTags(img.Tags)
+		sorted = append(sorted, img)
+	}
+	// Save to file.
 	w := csv.NewWriter(file)
-	w.WriteAll(toRecords(images, dir, prefix, useLinuxSep))
+	w.WriteAll(toRecords(sorted, dir, prefix, useLinuxSep))
 
 	if err := w.Error(); err != nil {
 		return fmt.Errorf("error writing csv: %v", err)
