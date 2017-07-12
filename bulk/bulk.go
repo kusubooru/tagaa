@@ -179,7 +179,7 @@ func CurrentPrefix(workingDir string, file io.Reader) (string, error) {
 		return sep, nil
 	}
 	for {
-		if filepath.Base(serverDir) == picFolder {
+		if filepath.Base(serverDir) == picFolder || serverDir == "" || serverDir == "." {
 			break
 		} else {
 			serverDir, _ = filepath.Split(serverDir)
