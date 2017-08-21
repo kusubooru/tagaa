@@ -258,7 +258,7 @@ func toRecord(img Image, dir, prefix string, useLinuxSep bool) []string {
 	var record []string
 	p := filepath.Join(prefix, filepath.Base(dir), img.Name)
 	if useLinuxSep {
-		p = strings.Replace(p, "\\", "/", -1)
+		p = filepath.ToSlash(p)
 	}
 	record = append(record, p)
 	record = append(record, strings.Join(img.Tags, " "))
