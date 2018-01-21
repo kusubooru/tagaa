@@ -12,17 +12,21 @@ import (
 	"github.com/kusubooru/tagaa/tagaa"
 )
 
-func setup() (tagaa.Store, *os.File) {
+func setup() (tagaa.Store, string) {
 	f, err := ioutil.TempFile("", "tagaa_boltdb_tmpfile_")
 	if err != nil {
 		log.Fatal("could not create boltdb temp file for tests:", err)
 	}
-	return NewStore(f.Name()), f
+	store, err := NewStore(f.Name())
+	if err != nil {
+		log.Fatal("NewStore for temp file error:", err)
+	}
+	return store, f.Name()
 }
 
-func teardown(store tagaa.Store, tmpfile *os.File) {
+func teardown(store tagaa.Store, tmpfile string) {
 	store.Close()
-	if err := os.Remove(tmpfile.Name()); err != nil {
+	if err := os.Remove(tmpfile); err != nil {
 		log.Println("could not remove boltdb temp file:", err)
 	}
 }
