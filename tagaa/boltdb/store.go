@@ -3,7 +3,7 @@ package boltdb
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,13 +26,31 @@ func (db *store) CreateGroup(groupName string) error {
 	return err
 }
 
-func (db *store) DeleteGroup(name string) error {
+func (db *store) DeleteGroup(groupName string) error {
+	g := new(tagaa.Group)
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupBucket))
-		return b.Delete([]byte(name))
+		if err := get(b, []byte(groupName), g); err != nil {
+			return err
+		}
+		if len(g.Images) != 0 {
+			return tagaa.ErrGroupNotEmpty
+		}
+		return b.Delete([]byte(groupName))
 	})
 	return err
+}
 
+func (db *store) GetGroup(groupName string) (*tagaa.Group, error) {
+	g := new(tagaa.Group)
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(groupBucket))
+		return get(b, []byte(groupName), g)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
 }
 
 func (db *store) GetAllGroups() ([]*tagaa.Group, error) {
@@ -200,7 +218,11 @@ func (db *store) UpdateImage(group string, img *tagaa.Image) error {
 }
 
 func get(b *bolt.Bucket, key []byte, v interface{}) error {
-	return decode(b.Get(key), v)
+	data := b.Get(key)
+	if data == nil {
+		return tagaa.ErrNotFound
+	}
+	return decode(data, v)
 }
 
 func decode(data []byte, v interface{}) error {
@@ -208,7 +230,7 @@ func decode(data []byte, v interface{}) error {
 	if _, err := buf.Write(data); err != nil {
 		return err
 	}
-	if err := gob.NewDecoder(&buf).Decode(v); err != nil {
+	if err := json.NewDecoder(&buf).Decode(v); err != nil {
 		return err
 	}
 	return nil
@@ -216,7 +238,7 @@ func decode(data []byte, v interface{}) error {
 
 func put(b *bolt.Bucket, key []byte, v interface{}) error {
 	buf := bytes.Buffer{}
-	if err := gob.NewEncoder(&buf).Encode(v); err != nil {
+	if err := json.NewEncoder(&buf).Encode(v); err != nil {
 		return err
 	}
 	if err := b.Put(key, buf.Bytes()); err != nil {
