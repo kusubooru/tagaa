@@ -87,20 +87,26 @@ func TestDeleteGroup(t *testing.T) {
 
 	groupName := "delete me"
 
-	want := tagaa.Group{Name: groupName}
-	testCreateGroupDeepEqual(t, store, groupName, want)
+	if err := store.CreateGroup(groupName); err != nil {
+		t.Fatalf("store.CreateGroup(%q) failed: %v", groupName, err)
+	}
+	testGroupsLength(t, store, 1, "after creating a group")
 
 	if err := store.DeleteGroup(groupName); err != nil {
 		t.Fatalf("delete group %q failed: %v", groupName, err)
 	}
 
-	_, err := store.GetGroup(groupName)
-	switch err {
-	case tagaa.ErrNotFound:
-	case nil:
-		t.Fatalf("store.GetGroup(%q) expected to return item not found error", groupName)
-	default:
-		t.Fatalf("store.GetGroup(%q) failed: %v", groupName, err)
+	testGroupsLength(t, store, 0, "after deleting created group")
+}
+
+func testGroupsLength(t *testing.T, store tagaa.Store, length int, context string) {
+	t.Helper()
+	groups, err := store.GetAllGroups()
+	if err != nil {
+		t.Fatal("getting all groups failed:", err)
+	}
+	if got, want := len(groups), length; got != want {
+		t.Errorf("%s, length of all groups is %d, want %d", context, got, want)
 	}
 }
 
@@ -110,8 +116,9 @@ func TestDeleteGroup_notEmpty(t *testing.T) {
 
 	groupName := "delete me"
 
-	want := tagaa.Group{Name: groupName}
-	testCreateGroupDeepEqual(t, store, groupName, want)
+	if err := store.CreateGroup(groupName); err != nil {
+		t.Fatalf("store.CreateGroup(%q) failed: %v", groupName, err)
+	}
 	if err := store.AddImage(groupName, &tagaa.Image{ID: uint64(1)}); err != nil {
 		t.Fatal("add image to group failed:", err)
 	}
@@ -139,24 +146,6 @@ func TestDeleteGroup_notFound(t *testing.T) {
 	default:
 		t.Fatalf("delete group %q failed: %v", groupName, err)
 	}
-}
-
-func testGetGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want tagaa.Group) tagaa.Group {
-	got, err := store.GetGroup(groupName)
-	if err != nil {
-		t.Fatalf("store.GetGroup(%q) failed: %v", groupName, err)
-	}
-
-	deepEqual(t, got, want)
-	return got
-}
-
-func testCreateGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want tagaa.Group) tagaa.Group {
-	if err := store.CreateGroup(groupName); err != nil {
-		t.Fatalf("store.CreateGroup(%q) failed: %v", groupName, err)
-	}
-
-	return testGetGroupDeepEqual(t, store, groupName, want)
 }
 
 func deepEqual(t *testing.T, got interface{}, want interface{}) {

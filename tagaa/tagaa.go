@@ -43,7 +43,6 @@ type Group struct {
 type Store interface {
 	CreateGroup(name string) error
 	DeleteGroup(name string) error
-	GetGroup(name string) (Group, error)
 	GetAllGroups() ([]Group, error)
 	GetGroupImages(name string) ([]*Image, error)
 	AddImage(group string, img *Image) error
