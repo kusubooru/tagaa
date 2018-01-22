@@ -39,11 +39,11 @@ func TestCreateGroup(t *testing.T) {
 	groupB := "group B"
 
 	if err := store.CreateGroup(groupA); err != nil {
-		t.Fatalf("store.CreateGroup(%q) failed:", groupA, err)
+		t.Fatalf("store.CreateGroup(%q) failed: %v", groupA, err)
 	}
 
 	if err := store.CreateGroup(groupB); err != nil {
-		t.Fatalf("store.CreateGroup(%q) failed:", groupB, err)
+		t.Fatalf("store.CreateGroup(%q) failed: %v", groupB, err)
 	}
 	out, err := store.GetAllGroups()
 	if err != nil {
@@ -161,17 +161,17 @@ func TestAddImage(t *testing.T) {
 
 	groupA := "group A"
 	if err := store.CreateGroup(groupA); err != nil {
-		t.Fatalf("store.CreateGroup(%q) failed:", groupA, err)
+		t.Fatalf("store.CreateGroup(%q) failed: %v", groupA, err)
 	}
 
 	imgName := "img.jpg"
 	img := &tagaa.Image{Name: imgName, Size: 5}
 	if err := store.AddImage(groupA, img); err != nil {
-		t.Fatalf("store.AddImage(%q, %#v) failed:", groupA, img, err)
+		t.Fatalf("store.AddImage(%q, %#v) failed: %v", groupA, img, err)
 	}
 	// add another image
 	if err := store.AddImage(groupA, img); err != nil {
-		t.Fatalf("store.AddImage(%q, %#v) failed:", groupA, img, err)
+		t.Fatalf("store.AddImage(%q, %#v) failed: %v", groupA, img, err)
 	}
 
 	got, err := store.GetAllGroups()
