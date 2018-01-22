@@ -206,9 +206,27 @@ func put(b *bolt.Bucket, key []byte, v interface{}) error {
 	return b.Put(key, buf.Bytes())
 }
 
-func (db *store) DeleteImage(group string, id uint64) error { return fmt.Errorf("not implemented") }
-func (db *store) GetImage(group string, id uint64) (*tagaa.Image, error) {
-	return nil, fmt.Errorf("not implemented")
+func (db *store) DeleteImage(groupName string, id uint64) error {
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			return tagaa.ErrGroupNotFound
+		}
+		return b.Delete(uitob(id))
+	})
+	return err
+}
+
+func (db *store) GetImage(groupName string, id uint64) (*tagaa.Image, error) {
+	var img = new(tagaa.Image)
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			return tagaa.ErrGroupNotFound
+		}
+		return get(b, uitob(id), img)
+	})
+	return img, err
 }
 
 func (db *store) GetImageData(hash string) ([]byte, error) {

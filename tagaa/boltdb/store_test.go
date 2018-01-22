@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/kusubooru/tagaa/tagaa"
 )
@@ -155,6 +156,21 @@ func deepEqual(t *testing.T, got interface{}, want interface{}) {
 	}
 }
 
+func TestGetImage_unknownGroup(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "non existent group"
+	_, err := store.GetImage(groupName, 0)
+	switch err {
+	case tagaa.ErrGroupNotFound:
+	case nil:
+		t.Errorf("getting image for group %q expected to return error", groupName)
+	default:
+		t.Errorf("getting image for group %q returned error: %v", groupName, err)
+	}
+}
+
 func TestAddImage(t *testing.T) {
 	store, f := setup()
 	defer teardown(store, f)
@@ -223,6 +239,55 @@ func TestAddImage_nonExistentGroup(t *testing.T) {
 		fmt.Printf("want: %v\n", string(data))
 	}
 
+}
+
+func TestDeleteImage_unknownGroup(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "non existent group"
+	err := store.DeleteImage(groupName, 0)
+	switch err {
+	case tagaa.ErrGroupNotFound:
+	case nil:
+		t.Errorf("deleting image for group %q expected to return error", groupName)
+	default:
+		t.Errorf("deleting image for group %q returned error: %v", groupName, err)
+	}
+}
+
+func TestDeleteImage(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "delete my images"
+	img := &tagaa.Image{Name: "img1"}
+	// Create group with image and check that it is created.
+	if err := store.AddImage(groupName, img); err != nil {
+		t.Fatalf("adding image to group %q failed: %v", groupName, err)
+	}
+	got, err := store.GetImage(groupName, img.ID)
+	if err != nil {
+		t.Fatalf("getting image failed: %v", err)
+	}
+	want := img
+	// ignore creation time
+	got.Added = time.Time{}
+	want.Added = time.Time{}
+	deepEqual(t, got, want)
+
+	// Delete image and check again.
+	if err := store.DeleteImage(groupName, img.ID); err != nil {
+		t.Fatalf("deleting image from group %q failed: %v", groupName, err)
+	}
+	_, err = store.GetImage(groupName, img.ID)
+	switch err {
+	case tagaa.ErrImageNotFound:
+	case nil:
+		t.Error("getting deleted image should return error")
+	default:
+		t.Error("getting image failed:", err)
+	}
 }
 
 func TestGetAllGroups(t *testing.T) {
