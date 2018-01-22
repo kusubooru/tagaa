@@ -41,20 +41,20 @@ func (db *store) DeleteGroup(groupName string) error {
 	return err
 }
 
-func (db *store) GetGroup(groupName string) (*tagaa.Group, error) {
+func (db *store) GetGroup(groupName string) (tagaa.Group, error) {
 	g := new(tagaa.Group)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupBucket))
 		return get(b, []byte(groupName), g)
 	})
 	if err != nil {
-		return nil, err
+		return tagaa.Group{}, err
 	}
-	return g, nil
+	return *g, nil
 }
 
-func (db *store) GetAllGroups() ([]*tagaa.Group, error) {
-	var groups []*tagaa.Group
+func (db *store) GetAllGroups() ([]tagaa.Group, error) {
+	var groups []tagaa.Group
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupBucket))
 
@@ -63,7 +63,7 @@ func (db *store) GetAllGroups() ([]*tagaa.Group, error) {
 			if err := decode(v, g); err != nil {
 				return err
 			}
-			groups = append(groups, g)
+			groups = append(groups, *g)
 			return nil
 		})
 	})

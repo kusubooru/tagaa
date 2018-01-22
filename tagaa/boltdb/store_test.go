@@ -53,7 +53,7 @@ func TestCreateGroup(t *testing.T) {
 		t.Fatalf("store.GetAllGroups returned %d results, expected %d instead", got, want)
 	}
 	got := out
-	want := []*tagaa.Group{
+	want := []tagaa.Group{
 		{Name: groupA},
 		{Name: groupB},
 	}
@@ -87,7 +87,7 @@ func TestDeleteGroup(t *testing.T) {
 
 	groupName := "delete me"
 
-	want := &tagaa.Group{Name: groupName}
+	want := tagaa.Group{Name: groupName}
 	testCreateGroupDeepEqual(t, store, groupName, want)
 
 	if err := store.DeleteGroup(groupName); err != nil {
@@ -110,7 +110,7 @@ func TestDeleteGroup_notEmpty(t *testing.T) {
 
 	groupName := "delete me"
 
-	want := &tagaa.Group{Name: groupName}
+	want := tagaa.Group{Name: groupName}
 	testCreateGroupDeepEqual(t, store, groupName, want)
 	if err := store.AddImage(groupName, &tagaa.Image{ID: uint64(1)}); err != nil {
 		t.Fatal("add image to group failed:", err)
@@ -141,8 +141,7 @@ func TestDeleteGroup_notFound(t *testing.T) {
 	}
 }
 
-func testGetGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want *tagaa.Group) *tagaa.Group {
-	t.Helper()
+func testGetGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want tagaa.Group) tagaa.Group {
 	got, err := store.GetGroup(groupName)
 	if err != nil {
 		t.Fatalf("store.GetGroup(%q) failed: %v", groupName, err)
@@ -152,8 +151,7 @@ func testGetGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, wa
 	return got
 }
 
-func testCreateGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want *tagaa.Group) *tagaa.Group {
-	t.Helper()
+func testCreateGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string, want tagaa.Group) tagaa.Group {
 	if err := store.CreateGroup(groupName); err != nil {
 		t.Fatalf("store.CreateGroup(%q) failed: %v", groupName, err)
 	}
@@ -162,7 +160,6 @@ func testCreateGroupDeepEqual(t *testing.T, store tagaa.Store, groupName string,
 }
 
 func deepEqual(t *testing.T, got interface{}, want interface{}) {
-	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("\nhave: %#v \nwant: %#v", got, want)
 		data, _ := json.Marshal(got)
@@ -195,7 +192,7 @@ func TestAddImage(t *testing.T) {
 	if err != nil {
 		t.Fatal("store.GetAllGroups failed:", err)
 	}
-	want := []*tagaa.Group{
+	want := []tagaa.Group{
 		{Name: groupA, Size: 10, Images: []uint64{1, 2}},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -233,7 +230,7 @@ func TestAddImage_nonExistentGroup(t *testing.T) {
 	if err != nil {
 		t.Fatal("store.GetAllGroups failed:", err)
 	}
-	want := []*tagaa.Group{
+	want := []tagaa.Group{
 		{Name: groupName, Size: 5, Images: []uint64{1}},
 	}
 	if !reflect.DeepEqual(got, want) {
