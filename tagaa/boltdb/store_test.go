@@ -171,6 +171,71 @@ func TestGetImage_unknownGroup(t *testing.T) {
 	}
 }
 
+func TestUpdateImage(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "group for updating image"
+	img := &tagaa.Image{Name: "initial-img.jpg"}
+	if err := store.AddImage(groupName, img); err != nil {
+		t.Fatalf("adding image to group %q failed: %v", groupName, err)
+	}
+	img.Name = "updated-img.jpg"
+	if err := store.UpdateImage(groupName, img); err != nil {
+		t.Fatalf("updating image in group %q failed: %v", groupName, err)
+	}
+
+	got, err := store.GetImage(groupName, img.ID)
+	if err != nil {
+		t.Fatalf("getting image from group %q failed: %v", groupName, err)
+	}
+	if got.Added.IsZero() {
+		t.Errorf("updated image should have not have zero added time")
+	}
+	if got.Updated.IsZero() {
+		t.Errorf("updated image should have not have zero updated time")
+	}
+	want := &tagaa.Image{ID: uint64(1), Name: "updated-img.jpg"}
+	// ignore times
+	got.Added = time.Time{}
+	got.Updated = time.Time{}
+	deepEqual(t, got, want)
+}
+
+func TestUpdateImage_unknownGroup(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "non existent group"
+	err := store.UpdateImage(groupName, &tagaa.Image{})
+	switch err {
+	case tagaa.ErrGroupNotFound:
+	case nil:
+		t.Errorf("updating image for group %q expected to return error", groupName)
+	default:
+		t.Errorf("updating image for group %q returned error: %v", groupName, err)
+	}
+}
+
+func TestUpdateImage_unknownImage(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "group with no images"
+	if err := store.CreateGroup(groupName); err != nil {
+		t.Fatalf("creating group %q failed: %v", groupName, err)
+	}
+
+	err := store.UpdateImage(groupName, &tagaa.Image{})
+	switch err {
+	case tagaa.ErrImageNotFound:
+	case nil:
+		t.Errorf("updating image for group %q expected to return error", groupName)
+	default:
+		t.Errorf("updating image for group %q returned error: %v", groupName, err)
+	}
+}
+
 func TestAddImage(t *testing.T) {
 	store, f := setup()
 	defer teardown(store, f)
@@ -270,10 +335,9 @@ func TestDeleteImage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("getting image failed: %v", err)
 	}
-	want := img
-	// ignore creation time
+	want := &tagaa.Image{ID: uint64(1), Name: "img1"}
+	// ignore time of creation
 	got.Added = time.Time{}
-	want.Added = time.Time{}
 	deepEqual(t, got, want)
 
 	// Delete image and check again.

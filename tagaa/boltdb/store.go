@@ -118,68 +118,23 @@ func uitob(v uint64) []byte {
 	return b
 }
 
-func (db *store) UpdateImage(group string, img *tagaa.Image) error {
-	//err := db.Update(func(tx *bolt.Tx) error {
-	//	// Make sure our image has an ID.
-	//	if img.ID == 0 {
-	//		return fmt.Errorf("trying to update image without ID")
-	//	}
-	//	// Take the group.
-	//	buf := bytes.Buffer{}
-	//	gb := tx.Bucket([]byte(groupBucket))
-	//	g := new(tagaa.Group)
-	//	v := b.Get([]byte(groupName))
-	//	if len(v) == 0 {
-	//		return fmt.Errorf("trying to update image of non-existent group")
-	//	}
-	//	if _, werr := buf.Write(v); werr != nil {
-	//		return werr
-	//	}
-	//	if err := gob.NewDecoder(&buf).Decode(&g); err != nil {
-	//		return err
-	//	}
-	//	// Make sure that img.ID exists in the group's image IDs.
-	//	sort.Slice(g.Images, func(i, j int) bool { return g.Images[i] < g.Images[j] })
-	//	i := sort.Search(len(g.Images), func(i int) bool { return g.Images[i] >= img.ID })
-	//	if i < len(g.Images) && g.Images[i] == img.ID {
-	//		// img.ID is present at g.Images[i]
-	//	} else {
-	//		// img.ID is not present in g.Images,
-	//		// but i is the index where it would be inserted.
-	//		return fmt.Errorf("group %q does not contain image ID: %d", group, img.ID)
-	//	}
-
-	//	// We can safely update the image.
-	//	ib := tx.Bucket([]byte(imageBucket))
-
-	//	// First get the old image.
-	//	oldImage := new(tagaa.Image)
-	//	v := ib.Get(img.ID)
-
-	//	img.Updated = time.Now()
-	//	if err := gob.NewEncoder(&buf).Encode(img); err != nil {
-	//		return err
-	//	}
-	//	if err := b.Put(uitob(id), buf.Bytes()); err != nil {
-	//		return err
-	//	}
-
-	//	// Then we get the image group.
-	//	buf.Reset()
-
-	//	// Then we add the new image id to the group and update the size.
-	//	g.Images = append(g.Images, id)
-	//	g.Size += img.Size
-
-	//	// Then we store the group again.
-	//	buf.Reset()
-	//	if err := gob.NewEncoder(&buf).Encode(&g); err != nil {
-	//		return err
-	//	}
-	//	return b.Put([]byte(groupName), buf.Bytes())
-	//})
-	//return err
-	return fmt.Errorf("not implemented")
+func (db *store) UpdateImage(groupName string, img *tagaa.Image) error {
+	if img == nil {
+		panic("attempting to update nil image")
+	}
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			return tagaa.ErrGroupNotFound
+		}
+		data := b.Get(uitob(img.ID))
+		if data == nil {
+			return tagaa.ErrImageNotFound
+		}
+		img.Updated = time.Now()
+		return put(b, uitob(img.ID), img)
+	})
+	return err
 }
 
 func get(b *bolt.Bucket, key []byte, v interface{}) error {
