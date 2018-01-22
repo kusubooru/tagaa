@@ -30,7 +30,7 @@ func (db *store) DeleteGroup(groupName string) error {
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
-			return tagaa.ErrNotFound
+			return tagaa.ErrGroupNotFound
 		}
 		// If the bucket contains a key, then it is not empty and thus not safe
 		// for deletion.
@@ -63,7 +63,7 @@ func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
-			return tagaa.ErrNotFound
+			return tagaa.ErrGroupNotFound
 		}
 		err := b.ForEach(func(k []byte, v []byte) error {
 			img := new(tagaa.Image)
@@ -185,7 +185,7 @@ func (db *store) UpdateImage(group string, img *tagaa.Image) error {
 func get(b *bolt.Bucket, key []byte, v interface{}) error {
 	data := b.Get(key)
 	if data == nil {
-		return tagaa.ErrNotFound
+		return tagaa.ErrImageNotFound
 	}
 	return decode(data, v)
 }

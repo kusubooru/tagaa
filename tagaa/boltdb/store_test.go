@@ -137,9 +137,9 @@ func TestDeleteGroup_notFound(t *testing.T) {
 	groupName := "non existent group"
 	err := store.DeleteGroup(groupName)
 	switch err {
-	case tagaa.ErrNotFound:
+	case tagaa.ErrGroupNotFound:
 	case nil:
-		t.Fatalf("delete non existent group expected to return error %q", tagaa.ErrNotFound)
+		t.Fatalf("delete non existent group expected to return error %q", tagaa.ErrGroupNotFound)
 	default:
 		t.Fatalf("delete group %q failed: %v", groupName, err)
 	}

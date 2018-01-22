@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	ErrNotFound      = errors.New("item not found")
+	ErrImageNotFound = errors.New("image not found")
 	ErrGroupNotEmpty = errors.New("group not empty")
 	ErrGroupExists   = errors.New("group already exists")
+	ErrGroupNotFound = errors.New("group not found")
 )
 
 type Rating int
