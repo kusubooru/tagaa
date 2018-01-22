@@ -35,12 +35,10 @@ type Image struct {
 	Ext     string
 }
 
-type Group string
-
 type Store interface {
 	CreateGroup(name string) error
 	DeleteGroup(name string) error
-	GetAllGroups() ([]Group, error)
+	GetAllGroups() ([]string, error)
 	GetGroupImages(name string) ([]*Image, error)
 	AddImage(group string, img *Image) error
 	UpdateImage(group string, img *Image) error

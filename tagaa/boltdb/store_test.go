@@ -53,7 +53,7 @@ func TestCreateGroup(t *testing.T) {
 		t.Fatalf("store.GetAllGroups returned %d results, expected %d instead", got, want)
 	}
 	got := out
-	want := []tagaa.Group{tagaa.Group(groupA), tagaa.Group(groupB)}
+	want := []string{groupA, groupB}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("store.GetAllGroups() \nhave: %#v \nwant: %#v", got, want)
 		data, _ := json.Marshal(got)
@@ -178,7 +178,7 @@ func TestAddImage(t *testing.T) {
 	if err != nil {
 		t.Fatal("store.GetAllGroups failed:", err)
 	}
-	want := []tagaa.Group{tagaa.Group(groupA)}
+	want := []string{groupA}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("store.GetAllGroups() \nhave: %#v \nwant: %#v", got, want)
 		data, _ := json.Marshal(got)
@@ -214,7 +214,7 @@ func TestAddImage_nonExistentGroup(t *testing.T) {
 	if err != nil {
 		t.Fatal("store.GetAllGroups failed:", err)
 	}
-	want := []tagaa.Group{tagaa.Group(groupName)}
+	want := []string{groupName}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("store.GetAllGroups() \nhave: %#v \nwant: %#v", got, want)
 		data, _ := json.Marshal(got)
@@ -232,6 +232,9 @@ func TestGetAllGroups(t *testing.T) {
 	groups, err := store.GetAllGroups()
 	if err != nil {
 		t.Fatal("getting all groups failed:", err)
+	}
+	if groups == nil {
+		t.Error("getting all groups should not return a nil slice")
 	}
 	if got, want := len(groups), 0; got != want {
 		t.Errorf("length of all groups is %d, want %d, groups = %v", got, want, groups)

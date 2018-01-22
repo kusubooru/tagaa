@@ -43,11 +43,11 @@ func (db *store) DeleteGroup(groupName string) error {
 	return err
 }
 
-func (db *store) GetAllGroups() ([]tagaa.Group, error) {
-	var groups []tagaa.Group
+func (db *store) GetAllGroups() ([]string, error) {
+	var groups = make([]string, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		err := tx.ForEach(func(name []byte, b *bolt.Bucket) error {
-			groups = append(groups, tagaa.Group(name))
+			groups = append(groups, string(name))
 			return nil
 		})
 		return err
