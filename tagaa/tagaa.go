@@ -8,6 +8,7 @@ import (
 var (
 	ErrNotFound      = errors.New("item not found")
 	ErrGroupNotEmpty = errors.New("group not empty")
+	ErrGroupExists   = errors.New("group already exists")
 )
 
 type Rating int
@@ -34,11 +35,7 @@ type Image struct {
 	Ext     string
 }
 
-type Group struct {
-	Name   string
-	Images []uint64
-	Size   int
-}
+type Group string
 
 type Store interface {
 	CreateGroup(name string) error

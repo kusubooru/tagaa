@@ -8,12 +8,6 @@ import (
 	"github.com/kusubooru/tagaa/tagaa"
 )
 
-const (
-	imageBucket = "images"
-	groupBucket = "groups"
-	blobBucket  = "blobs"
-)
-
 type store struct {
 	*bolt.DB
 }
@@ -29,21 +23,6 @@ func openBolt(file string) (*bolt.DB, error) {
 	db, err := bolt.Open(file, 0600, &bolt.Options{Timeout: 5 * time.Second})
 	if err != nil {
 		return nil, fmt.Errorf("opening bolt file: %v", err)
-	}
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err = tx.CreateBucketIfNotExists([]byte(imageBucket))
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte(groupBucket))
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte(blobBucket))
-		return err
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating buckets: %v", err)
 	}
 	return db, nil
 }

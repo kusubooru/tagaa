@@ -13,59 +13,44 @@ import (
 
 func (db *store) CreateGroup(groupName string) error {
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(groupBucket))
-
-		v := b.Get([]byte(groupName))
-		if len(v) != 0 {
-			return fmt.Errorf("group exists")
+		_, err := tx.CreateBucket([]byte(groupName))
+		switch err {
+		case bolt.ErrBucketExists:
+			return tagaa.ErrGroupExists
+		case nil:
+			return nil
+		default:
+			return err
 		}
-
-		g := &tagaa.Group{Name: groupName}
-		return put(b, []byte(groupName), g)
 	})
 	return err
 }
 
 func (db *store) DeleteGroup(groupName string) error {
-	g := new(tagaa.Group)
 	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(groupBucket))
-		if err := get(b, []byte(groupName), g); err != nil {
-			return err
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			return tagaa.ErrNotFound
 		}
-		if len(g.Images) != 0 {
+		// If the bucket contains a key, then it is not empty and thus not safe
+		// for deletion.
+		key, _ := b.Cursor().First()
+		if key != nil {
 			return tagaa.ErrGroupNotEmpty
 		}
-		return b.Delete([]byte(groupName))
+		return tx.DeleteBucket([]byte(groupName))
 	})
 	return err
-}
-
-func (db *store) GetGroup(groupName string) (tagaa.Group, error) {
-	g := new(tagaa.Group)
-	err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(groupBucket))
-		return get(b, []byte(groupName), g)
-	})
-	if err != nil {
-		return tagaa.Group{}, err
-	}
-	return *g, nil
 }
 
 func (db *store) GetAllGroups() ([]tagaa.Group, error) {
 	var groups []tagaa.Group
 	err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(groupBucket))
-
-		return b.ForEach(func(k, v []byte) error {
-			g := new(tagaa.Group)
-			if err := decode(v, g); err != nil {
-				return err
-			}
-			groups = append(groups, *g)
+		err := tx.ForEach(func(name []byte, b *bolt.Bucket) error {
+			groups = append(groups, tagaa.Group(name))
 			return nil
 		})
+		return err
 	})
 	if err != nil {
 		return nil, err
@@ -76,20 +61,19 @@ func (db *store) GetAllGroups() ([]tagaa.Group, error) {
 func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 	var images []*tagaa.Image
 	err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(groupBucket))
-		g := new(tagaa.Group)
-		if err := get(b, []byte(groupName), g); err != nil {
-			return err
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			return tagaa.ErrNotFound
 		}
-		b = tx.Bucket([]byte(imageBucket))
-		for _, imgID := range g.Images {
+		err := b.ForEach(func(k []byte, v []byte) error {
 			img := new(tagaa.Image)
-			if err := get(b, uitob(imgID), img); err != nil {
+			if err := decode(v, img); err != nil {
 				return err
 			}
 			images = append(images, img)
-		}
-		return nil
+			return nil
+		})
+		return err
 	})
 	if err != nil {
 		return nil, err
@@ -100,8 +84,14 @@ func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 
 func (db *store) AddImage(groupName string, img *tagaa.Image) error {
 	err := db.Update(func(tx *bolt.Tx) error {
-		// First we add the img to imageBucket.
-		b := tx.Bucket([]byte(imageBucket))
+		b := tx.Bucket([]byte(groupName))
+		if b == nil {
+			newBucket, err := tx.CreateBucket([]byte(groupName))
+			if err != nil {
+				return err
+			}
+			b = newBucket
+		}
 
 		// Create image ID.
 		id, err := b.NextSequence()
@@ -110,32 +100,7 @@ func (db *store) AddImage(groupName string, img *tagaa.Image) error {
 		}
 		img.ID = id
 		img.Added = time.Now()
-		if err := put(b, uitob(id), img); err != nil {
-			return err
-		}
-
-		// Then we get the image group.
-		g := new(tagaa.Group)
-		b = tx.Bucket([]byte(groupBucket))
-		v := b.Get([]byte(groupName))
-		// Group does not exist. Create a new one.
-		if len(v) == 0 {
-			newGroup := &tagaa.Group{Name: groupName}
-			if err := put(b, []byte(groupName), newGroup); err != nil {
-				return err
-			}
-			v = b.Get([]byte(groupName))
-		}
-		if err := decode(v, g); err != nil {
-			return err
-		}
-
-		// Then we add the new image id to the group and update the size.
-		g.Images = append(g.Images, id)
-		g.Size += img.Size
-
-		// Then we store the group again.
-		return put(b, []byte(groupName), g)
+		return put(b, uitob(id), img)
 	})
 	return err
 }
@@ -253,11 +218,5 @@ func (db *store) GetImage(group string, id uint64) (*tagaa.Image, error) {
 }
 
 func (db *store) GetImageData(hash string) ([]byte, error) {
-	buf := bytes.Buffer{}
-	err := db.View(func(tx *bolt.Tx) error {
-		value := tx.Bucket([]byte(blobBucket)).Get([]byte(hash))
-		_, werr := buf.Write(value)
-		return werr
-	})
-	return buf.Bytes(), err
+	return nil, fmt.Errorf("not implemented")
 }
