@@ -195,10 +195,7 @@ func decode(data []byte, v interface{}) error {
 	if _, err := buf.Write(data); err != nil {
 		return err
 	}
-	if err := json.NewDecoder(&buf).Decode(v); err != nil {
-		return err
-	}
-	return nil
+	return json.NewDecoder(&buf).Decode(v)
 }
 
 func put(b *bolt.Bucket, key []byte, v interface{}) error {
@@ -206,10 +203,7 @@ func put(b *bolt.Bucket, key []byte, v interface{}) error {
 	if err := json.NewEncoder(&buf).Encode(v); err != nil {
 		return err
 	}
-	if err := b.Put(key, buf.Bytes()); err != nil {
-		return err
-	}
-	return nil
+	return b.Put(key, buf.Bytes())
 }
 
 func (db *store) DeleteImage(group string, id uint64) error { return fmt.Errorf("not implemented") }
