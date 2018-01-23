@@ -5,14 +5,13 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/kusubooru/tagaa/tagaa"
 )
 
-type store struct {
+type Store struct {
 	*bolt.DB
 }
 
-func (db *store) Close() error {
+func (db *Store) Close() error {
 	return db.DB.Close()
 }
 
@@ -29,10 +28,10 @@ func openBolt(file string) (*bolt.DB, error) {
 
 // NewStore opens the bolt database file and returns an implementation for
 // tagaa.Store. The bolt database file will be created if it does not exist.
-func NewStore(boltFile string) (tagaa.Store, error) {
+func NewStore(boltFile string) (*Store, error) {
 	db, err := openBolt(boltFile)
 	if err != nil {
 		return nil, err
 	}
-	return &store{db}, nil
+	return &Store{db}, nil
 }

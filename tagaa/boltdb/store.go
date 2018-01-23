@@ -11,7 +11,7 @@ import (
 	"github.com/kusubooru/tagaa/tagaa"
 )
 
-func (db *store) CreateGroup(groupName string) error {
+func (db *Store) CreateGroup(groupName string) error {
 	err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(groupName))
 		switch err {
@@ -26,7 +26,7 @@ func (db *store) CreateGroup(groupName string) error {
 	return err
 }
 
-func (db *store) DeleteGroup(groupName string) error {
+func (db *Store) DeleteGroup(groupName string) error {
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
@@ -43,7 +43,7 @@ func (db *store) DeleteGroup(groupName string) error {
 	return err
 }
 
-func (db *store) GetAllGroups() ([]string, error) {
+func (db *Store) GetAllGroups() ([]string, error) {
 	var groups = make([]string, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		err := tx.ForEach(func(name []byte, b *bolt.Bucket) error {
@@ -55,7 +55,7 @@ func (db *store) GetAllGroups() ([]string, error) {
 	return groups, err
 }
 
-func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
+func (db *Store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 	var images = make([]*tagaa.Image, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
@@ -75,7 +75,7 @@ func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 	return images, err
 }
 
-func (db *store) AddImage(groupName string, img *tagaa.Image) error {
+func (db *Store) AddImage(groupName string, img *tagaa.Image) error {
 	if img == nil {
 		panic("attempting to add nil image")
 	}
@@ -108,7 +108,7 @@ func uitob(v uint64) []byte {
 	return b
 }
 
-func (db *store) UpdateImage(groupName string, img *tagaa.Image) error {
+func (db *Store) UpdateImage(groupName string, img *tagaa.Image) error {
 	if img == nil {
 		panic("attempting to update nil image")
 	}
@@ -151,7 +151,7 @@ func put(b *bolt.Bucket, key []byte, v interface{}) error {
 	return b.Put(key, buf.Bytes())
 }
 
-func (db *store) DeleteImage(groupName string, id uint64) error {
+func (db *Store) DeleteImage(groupName string, id uint64) error {
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
@@ -162,7 +162,7 @@ func (db *store) DeleteImage(groupName string, id uint64) error {
 	return err
 }
 
-func (db *store) GetImage(groupName string, id uint64) (*tagaa.Image, error) {
+func (db *Store) GetImage(groupName string, id uint64) (*tagaa.Image, error) {
 	var img = new(tagaa.Image)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
@@ -174,6 +174,6 @@ func (db *store) GetImage(groupName string, id uint64) (*tagaa.Image, error) {
 	return img, err
 }
 
-func (db *store) GetImageData(hash string) ([]byte, error) {
+func (db *Store) GetImageData(hash string) ([]byte, error) {
 	return nil, fmt.Errorf("not implemented")
 }
