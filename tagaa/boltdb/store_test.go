@@ -278,7 +278,7 @@ func TestAddImage(t *testing.T) {
 
 	images, err := store.GetGroupImages(groupA)
 	if err != nil {
-		t.Fatal("store.GetGroupImages(%q) failed:", groupA, err)
+		t.Fatalf("store.GetGroupImages(%q) failed: %v", groupA, err)
 		//t.Errorf("store.GetGroupImages(%q) \nhave: %#v \nwant: %#v", groupA, got, want)
 	}
 	if got, want := len(images), 2; got != want {
@@ -358,7 +358,8 @@ func TestDeleteImage(t *testing.T) {
 	deepEqual(t, got, want)
 
 	// Delete image and check again.
-	if err := store.DeleteImage(groupName, img.ID); err != nil {
+	err = store.DeleteImage(groupName, img.ID)
+	if err != nil {
 		t.Fatalf("deleting image from group %q failed: %v", groupName, err)
 	}
 	_, err = store.GetImage(groupName, img.ID)
