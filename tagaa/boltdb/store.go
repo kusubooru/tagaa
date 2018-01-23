@@ -99,7 +99,7 @@ func (db *store) AddImage(groupName string, img *tagaa.Image) error {
 			return err
 		}
 		img.ID = id
-		img.Added = time.Now()
+		img.Added = time.Now().Round(0)
 		return put(b, uitob(id), img)
 	})
 	return err
@@ -131,7 +131,7 @@ func (db *store) UpdateImage(groupName string, img *tagaa.Image) error {
 		if data == nil {
 			return tagaa.ErrImageNotFound
 		}
-		img.Updated = time.Now()
+		img.Updated = time.Now().Round(0)
 		return put(b, uitob(img.ID), img)
 	})
 	return err

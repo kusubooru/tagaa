@@ -8,7 +8,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/kusubooru/tagaa/tagaa"
 )
@@ -195,10 +194,7 @@ func TestUpdateImage(t *testing.T) {
 	if got.Updated.IsZero() {
 		t.Errorf("updated image should have not have zero updated time")
 	}
-	want := &tagaa.Image{ID: uint64(1), Name: "updated-img.jpg"}
-	// ignore times
-	got.Added = time.Time{}
-	got.Updated = time.Time{}
+	want := &tagaa.Image{ID: img.ID, Name: "updated-img.jpg", Added: img.Added, Updated: img.Updated}
 	deepEqual(t, got, want)
 }
 
@@ -335,9 +331,7 @@ func TestDeleteImage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("getting image failed: %v", err)
 	}
-	want := &tagaa.Image{ID: uint64(1), Name: "img1"}
-	// ignore time of creation
-	got.Added = time.Time{}
+	want := &tagaa.Image{ID: img.ID, Name: "img1", Added: img.Added}
 	deepEqual(t, got, want)
 
 	// Delete image and check again.
