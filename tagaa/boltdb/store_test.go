@@ -232,6 +232,18 @@ func TestUpdateImage_unknownImage(t *testing.T) {
 	}
 }
 
+func TestUpdateImage_nilImage(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("updating nil image should panic")
+		}
+	}()
+
+	store.UpdateImage("panic", nil)
+}
+
 func TestAddImage(t *testing.T) {
 	store, f := setup()
 	defer teardown(store, f)
@@ -299,7 +311,18 @@ func TestAddImage_nonExistentGroup(t *testing.T) {
 		data, _ = json.Marshal(want)
 		fmt.Printf("want: %v\n", string(data))
 	}
+}
 
+func TestAddImage_nilImage(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("adding nil image should panic")
+		}
+	}()
+
+	store.AddImage("panic", nil)
 }
 
 func TestDeleteImage_unknownGroup(t *testing.T) {

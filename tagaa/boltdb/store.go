@@ -76,6 +76,9 @@ func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 }
 
 func (db *store) AddImage(groupName string, img *tagaa.Image) error {
+	if img == nil {
+		panic("attempting to add nil image")
+	}
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
