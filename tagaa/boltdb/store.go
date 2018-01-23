@@ -56,7 +56,7 @@ func (db *store) GetAllGroups() ([]string, error) {
 }
 
 func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
-	var images []*tagaa.Image
+	var images = make([]*tagaa.Image, 0)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(groupName))
 		if b == nil {
@@ -72,11 +72,7 @@ func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
 		})
 		return err
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return images, nil
+	return images, err
 }
 
 func (db *store) AddImage(groupName string, img *tagaa.Image) error {
