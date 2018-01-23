@@ -52,10 +52,7 @@ func (db *store) GetAllGroups() ([]string, error) {
 		})
 		return err
 	})
-	if err != nil {
-		return nil, err
-	}
-	return groups, nil
+	return groups, err
 }
 
 func (db *store) GetGroupImages(groupName string) ([]*tagaa.Image, error) {
