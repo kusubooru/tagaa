@@ -45,5 +45,4 @@ type Store interface {
 	UpdateImage(group string, img *Image) error
 	DeleteImage(group string, id uint64) error
 	GetImage(group string, id uint64) (*Image, error)
-	GetImageData(hash string) ([]byte, error)
 }

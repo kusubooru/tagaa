@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -172,8 +171,4 @@ func (db *Store) GetImage(groupName string, id uint64) (*tagaa.Image, error) {
 		return get(b, uitob(id), img)
 	})
 	return img, err
-}
-
-func (db *Store) GetImageData(hash string) ([]byte, error) {
-	return nil, fmt.Errorf("not implemented")
 }
