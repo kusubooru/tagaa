@@ -385,5 +385,19 @@ func TestGetAllGroups(t *testing.T) {
 	if got, want := len(groups), 0; got != want {
 		t.Errorf("length of all groups is %d, want %d, groups = %v", got, want, groups)
 	}
+}
 
+func TestGetGroupImages_unknownGroup(t *testing.T) {
+	store, f := setup()
+	defer teardown(store, f)
+
+	groupName := "unknown group"
+	_, err := store.GetGroupImages(groupName)
+	switch err {
+	case tagaa.ErrGroupNotFound:
+	case nil:
+		t.Errorf("getting group images of group %q should return error", groupName)
+	default:
+		t.Errorf("getting group images of group %q returned error %v", groupName, err)
+	}
 }
