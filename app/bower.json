@@ -1,0 +1,29 @@
+{
+  "name": "tagaa-app",
+  "homepage": "https://github.com/kusubooru/tagaa",
+  "authors": [
+    "Kusubooru <kusubooru@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webcomponentsjs": "^1.1.0",
+    "polymer": "^2.3.1",
+    "app-layout": "^2.0.4",
+    "paper-input": "^2.1.0",
+    "paper-button": "^2.0.0",
+    "paper-radio-group": "^2.0.0",
+    "paper-icon-button": "^2.0.1",
+    "iron-icons": "^2.0.1",
+    "paper-fab": "^2.0.0"
+  }
+}
