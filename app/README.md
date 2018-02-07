@@ -3,7 +3,6 @@
 ## After clone
 ```
 bower install
-polymer build
 polymer serve
 ```
 
@@ -11,4 +10,9 @@ polymer serve
 ```
 bower install --save PolymerElements/app-route
 bower uninstall --save PolymerElements/app-route
+```
+
+## Build
+```
+polymer build
 ```
