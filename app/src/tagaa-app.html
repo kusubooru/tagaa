@@ -4,11 +4,13 @@
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
-<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="./tagaa-rate.html">
 
 <dom-module id="tagaa-app">
   <template>
@@ -28,29 +30,15 @@
         background-color: var(--app-primary-color);
       }
 
-      paper-fab {
-        position: fixed;
-        bottom: 16px;
-        right: 16px; 
-        color: var(--app-secondary-text-color);
-        background-color: var(--app-secondary-color);
-        --paper-fab-iron-icon: {
-          /* Using display: block; in order to get a larger 32x32 icon. Without
-          it, paper-fab does not respect the 32px height and keeps the default
-          height of 24px because the default display style is inline-flex. */
-          display: block; 
-          height: 34px;
-          width: 34px;
-        };
-      }
-
-      @media(min-width: 768px) {
-        paper-fab {
-          bottom: 32px;
-          right: 32px; 
-        }
-      }
     </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </app-route>
     <app-drawer-layout narrow="{{narrow}}">
       <!-- <app-drawer slot="drawer" swipe-open="[[narrow]]">
         <app-toolbar>menu</app-toolbar>
@@ -61,8 +49,9 @@
             <div>Tagaa</div>
           </app-toolbar>
         </app-header>
-        <paper-fab icon="add"></paper-fab>
-        <tagaa-rate></tagaa-rate>
+        <iron-pages selected=[[page]] attr-for-selected="name">
+          <tagaa-home name="home"></tagaa-home>
+        </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
   </template>
@@ -70,6 +59,46 @@
   <script>
     class TagaaApp extends Polymer.Element {
       static get is() { return 'tagaa-app'; }
+      static get properties() {
+        return {
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+          },
+          routeData: Object,
+          subroute: String
+        }
+      }
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)',
+        ];
+      }
+
+      _routePageChanged(page) {
+        // If no page was found in the route data, page will be an empty string.
+        // Deault to 'home' in that case.
+        this.page = page || 'home';
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl('tagaa-' + page + '.html');
+        Polymer.importHref(
+            resolvedPageUrl,
+            null,
+            this._showPage404.bind(this),
+            true);
+      }
+
+      _showPage404() {
+        this.page = 'home';
+      }
+
+      _log(e) {
+        console.log(e);
+      }
     }
 
     window.customElements.define(TagaaApp.is, TagaaApp);
