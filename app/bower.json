@@ -27,6 +27,8 @@
     "paper-fab": "PolymerElements/paper-fab#^2.0.0",
     "app-route": "PolymerElements/app-route#^2.0.3",
     "iron-selector": "PolymerElements/iron-selector#^2.0.1",
-    "iron-pages": "PolymerElements/iron-pages#^2.0.1"
+    "iron-pages": "PolymerElements/iron-pages#^2.0.1",
+    "vaadin-upload": "vaadin/vaadin-upload#^3.0.2",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.1"
   }
 }

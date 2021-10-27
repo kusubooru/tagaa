@@ -11,6 +11,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="./tagaa-upload.html">
 
 <dom-module id="tagaa-app">
   <template>
@@ -29,7 +30,12 @@
         color: var(--app-primary-text-color);
         background-color: var(--app-primary-color);
       }
-
+      paper-dialog[unresolved] {
+        display: none;
+      }
+      paper-dialog {
+        display: block;
+      }
     </style>
 
     <app-location route="{{route}}"></app-location>
@@ -39,6 +45,10 @@
         data="{{routeData}}"
         tail="{{subroute}}">
     </app-route>
+    <!-- 
+      Moved here because of:
+      https://github.com/PolymerElements/paper-dialog/issues/152
+    -->
     <app-drawer-layout narrow="{{narrow}}">
       <!-- <app-drawer slot="drawer" swipe-open="[[narrow]]">
         <app-toolbar>menu</app-toolbar>
@@ -50,10 +60,19 @@
           </app-toolbar>
         </app-header>
         <iron-pages selected=[[page]] attr-for-selected="name">
-          <tagaa-home name="home"></tagaa-home>
+          <tagaa-home on-fab-click="_openUploadModal" name="home"></tagaa-home>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+    <paper-dialog id="uploadModal" modal unresolved>
+      <tagaa-upload></tagaa-upload>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus>Tap me to close</paper-button>
+      </div>
+    </paper-dialog>
+    <template is="dom-if" if="[[isReady]]">
+    </template>
   </template>
 
   <script>
@@ -61,10 +80,13 @@
       static get is() { return 'tagaa-app'; }
       static get properties() {
         return {
+          isReady: {
+            type: Boolean
+          },
           page: {
             type: String,
             reflectToAttribute: true,
-            observer: '_pageChanged',
+            observer: '_pageChanged'
           },
           routeData: Object,
           subroute: String
@@ -76,7 +98,20 @@
         ];
       }
 
+      ready() {
+        super.ready();
+        this.isReady = true;
+      }
+
+      //_ready() {
+      //  console.log(this.$.uploadModal.style.display);
+      //  //return this.isReady;
+      //  this.$.uploadModal.style.display = 'block';
+      //  console.log(this.$.uploadModal.style.display);
+      //}
+
       _routePageChanged(page) {
+        console.log(page === undefined);
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'home' in that case.
         this.page = page || 'home';
@@ -98,6 +133,14 @@
 
       _log(e) {
         console.log(e);
+      }
+
+      _openUploadModal() {
+        // Removing unresolved turns display from none to block. The display
+        // starts as none because otherwise the content of the paper-dialog
+        // appears during page load.
+        this.$.uploadModal.removeAttribute('unresolved');
+        this.$.uploadModal.open();
       }
     }
 

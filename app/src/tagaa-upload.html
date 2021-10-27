@@ -1,0 +1,27 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/vaadin-upload/vaadin-upload.html">
+
+<dom-module id="tagaa-upload">
+  <template>
+    <style>
+      [slot="drop-label-icon"] {
+        margin: 0 1em;
+        width: 20px;
+      }
+      vaadin-upload {
+        padding: 8em;
+        margin: 2em;
+      }
+    </style>
+    <vaadin-upload accept="image/jpeg,image/png,image/gif">
+      <iron-icon slot="drop-label-icon" icon="image:collections"></iron-icon>
+      <span slot="drop-label">Drop your images here</span>
+    </vaadin-upload>
+  </template>
+  <script>
+    class TagaaUpload extends Polymer.Element {
+      static get is() { return 'tagaa-upload'; }
+    }
+    window.customElements.define(TagaaUpload.is, TagaaUpload)
+  </script>
+</dom-module>
